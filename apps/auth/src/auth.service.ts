@@ -7,6 +7,10 @@ import { USER_REPOSITORY } from './infrastructure/repositories/user.repository.i
 import { AuthActions } from './domain/actions/auth.actions';
 import { AuthService, User } from './interfaces/auth.interface';
 import { EnvironmentVariables } from './config';
+import {
+  JwtSigningKeyProvider,
+  JWT_SIGNING_KEY_PROVIDER,
+} from '@app/common/auth-core/interfaces/jwt-key-provider.interface';
 
 @Injectable()
 export class AuthServiceImpl implements AuthService {
@@ -15,6 +19,8 @@ export class AuthServiceImpl implements AuthService {
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService<EnvironmentVariables, true>,
+    @Inject(JWT_SIGNING_KEY_PROVIDER)
+    private readonly jwtKeyProvider: JwtSigningKeyProvider,
   ) {}
 
   async signUp(signUpDto: SignUpDto): Promise<User> {
@@ -103,14 +109,14 @@ export class AuthServiceImpl implements AuthService {
 
     const config = {
       access: {
-        expiresIn: this.configService.get<string>(
-          'JWT_ACCESS_TOKEN_EXPIRES_IN',
+        expiresIn: Number(
+          this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN'),
         ),
-        secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
+        secret: await this.jwtKeyProvider.getSigningKey('HS256'),
       },
       refresh: {
-        expiresIn: this.configService.get<string>(
-          'JWT_REFRESH_TOKEN_EXPIRES_IN',
+        expiresIn: Number(
+          this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRES_IN'),
         ),
         secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
       },

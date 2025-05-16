@@ -3,30 +3,29 @@ import { ConfigService } from '@nestjs/config';
 import {
   JwtAlgorithm,
   JwtSigningKeyProvider,
+  JwtVerificationKeyProvider,
 } from '../interfaces/jwt-key-provider.interface';
 
 @Injectable()
-export class EnvJwtKeyProvider implements JwtSigningKeyProvider {
+export class EnvJwtKeyProvider
+  implements JwtSigningKeyProvider, JwtVerificationKeyProvider
+{
   constructor(private readonly configService: ConfigService) {}
 
   getSigningKey(algorithm: JwtAlgorithm): string {
     if (algorithm === 'HS256') {
-      const secret = this.configService.get<string>('JWT_SECRET');
+      const secret = this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET');
       if (!secret) {
-        console.error('JWT_SECRET 환경 변수가 설정되지 않았습니다.');
-        throw new Error('JWT_SECRET is not defined in environment variables');
-      }
-      return secret;
-    } else if (algorithm === 'RS256') {
-      const privateKey = this.configService.get<string>('JWT_PRIVATE_KEY');
-      if (!privateKey) {
-        console.error('JWT_PRIVATE_KEY 환경 변수가 설정되지 않았습니다.');
         throw new Error(
-          'JWT_PRIVATE_KEY is not defined in environment variables',
+          'JWT_ACCESS_TOKEN_SECRET is not defined in environment variables',
         );
       }
-      return privateKey;
+      return secret;
     }
     throw new Error(`Unsupported algorithm: ${algorithm}`);
+  }
+
+  getVerificationKey(algorithm: JwtAlgorithm): string {
+    return this.getSigningKey(algorithm);
   }
 }

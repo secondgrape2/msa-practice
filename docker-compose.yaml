@@ -8,12 +8,12 @@ services:
     container_name: gateway_service
     ports:
       - '${GATEWAY_PORT:-3000}:3000'
-    env_file:
-      - ./apps/gateway/.env
     environment:
-      - NODE_ENV=development
-      - AUTH_SERVICE_URL=http://auth_service:3001
-      - EVENT_SERVICE_URL=http://event_service:3002
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${GATEWAY_PORT}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
+      EVENT_SERVICE_URL: ${EVENT_SERVICE_URL}
+      JWT_ACCESS_TOKEN_SECRET: ${JWT_ACCESS_TOKEN_SECRET}
     volumes:
       - ./apps/gateway/src:/usr/src/app/apps/gateway/src
       - ./libs:/usr/src/app/libs
@@ -29,13 +29,16 @@ services:
       dockerfile: apps/auth/Dockerfile
     container_name: auth_service_container
     ports:
-      - '${AUTH_PORT:-3001}:3001'
-    env_file:
-      - ./apps/auth/.env
+      - '${PORT:-3001}:3001'
     environment:
-      - NODE_ENV=development
-      - DB_URL=mongodb://mongo_db:27017/auth_db
-      - JWT_SECRET=YOUR_VERY_SECRET_KEY_AUTH
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${AUTH_PORT}
+      MONGODB_URI: ${AUTH_MONGODB_URI}
+      JWT_ACCESS_TOKEN_SECRET: ${JWT_ACCESS_TOKEN_SECRET}
+      JWT_REFRESH_TOKEN_SECRET: ${JWT_REFRESH_TOKEN_SECRET}
+      JWT_ACCESS_TOKEN_EXPIRES_IN: ${JWT_ACCESS_TOKEN_EXPIRES_IN}
+      JWT_REFRESH_TOKEN_EXPIRES_IN: ${JWT_REFRESH_TOKEN_EXPIRES_IN}
+      API_SERVER_ORIGIN: ${AUTH_API_SERVER_ORIGIN}
     volumes:
       - ./apps/auth/src:/usr/src/app/apps/auth/src
       - ./libs:/usr/src/app/libs
