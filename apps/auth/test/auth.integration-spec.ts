@@ -7,9 +7,6 @@ import { Connection } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { Response } from 'supertest';
 import { nanoid } from 'nanoid';
-import { AuthModule } from '../src/auth.module';
-import { SignUpDto } from '../src/dto/sign-up.dto';
-import { SignInDto } from '../src/dto/sign-in.dto';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -67,6 +64,9 @@ describe('AuthController (e2e)', () => {
           expect(res.body.data).toHaveProperty('id');
           expect(res.body.data.email).toBe(signUpDto.email);
           expect(res.body.data).not.toHaveProperty('password');
+          expect(res.body.data.roles).toEqual(['user']);
+          expect(res.body).not.toHaveProperty('token');
+          expect(res.headers['set-cookie']).toBeDefined();
         });
     });
 
@@ -107,8 +107,8 @@ describe('AuthController (e2e)', () => {
         .expect((res: Response) => {
           expect(res.body.data).toHaveProperty('id');
           expect(res.body.data.email).toBe(signUpDto.email);
-          expect(res.body.token).toHaveProperty('jwt');
-          expect(res.body.token).toHaveProperty('jwtRefresh');
+          expect(res.body.data.roles).toEqual(['user']);
+          expect(res.body).not.toHaveProperty('token');
           expect(res.headers['set-cookie']).toBeDefined();
         });
     });

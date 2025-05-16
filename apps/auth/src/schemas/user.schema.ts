@@ -5,7 +5,8 @@ import { User } from '../domain/user.domain';
 
 export type UserDocument = UserEntity & Document;
 
-@Schema({ timestamps: true })
+const USER_COLLECTION_NAME = 'users';
+@Schema({ timestamps: true, collection: USER_COLLECTION_NAME })
 export class UserEntity {
   _id: string;
 

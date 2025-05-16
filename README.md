@@ -1,32 +1,32 @@
 # MSA Practice
 
-## Prerequisites
+## 사전 요구사항
 
-- Node.js (v18 or higher)
-- Docker and Docker Compose
-- Yarn package manager
+- Node.js (v18 이상)
+- Docker와 Docker Compose
+- Yarn 패키지 매니저
 
-## Getting Started
+## 시작하기
 
-### 1. Install dependencies
+### 1. 의존성 설치
 
 ```bash
 yarn install
 ```
 
-### 2. Set up environment variables
+### 2. 환경 변수 설정
 
-Create `.env` files in each service directory:
+각 서비스 디렉토리에 `.env` 파일을 생성하세요:
 
 - `apps/auth/.env`
 - `apps/gateway/.env`
 - `apps/event/.env`
 
-Each service requires its own environment variables.
+각 서비스는 고유한 환경 변수가 필요합니다.
 
-### 3. Run the application
+### 3. 애플리케이션 실행
 
-Development mode:
+개발 모드:
 
 ```bash
 yarn start:dev:auth
@@ -34,13 +34,13 @@ yarn start:dev:gateway
 yarn start:dev:event
 ```
 
-### 4. Run tests
+### 4. 테스트 실행
 
 ```bash
-# Unit tests
+# 단위 테스트
 yarn test
 
-# Integration tests
+# 통합 테스트
 yarn test:integration:auth
 yarn test:integration:gateway
 yarn test:integration:event
@@ -52,20 +52,54 @@ yarn test:integration:event
 docker compose -f docker-compose.yaml up -d
 ```
 
-## Docker Compose auth service
+## Docker Compose auth 서비스
 
 ```bash
 docker compose -f docker-compose.yaml up -d auth_service mongo_db
 ```
 
-## Docker Compose gateway service
+## Docker Compose gateway 서비스
 
 ```bash
 docker compose -f docker-compose.yaml up -d gateway_service mongo_db
 ```
 
-## Docker Compose event service
+## Docker Compose event 서비스
 
 ```bash
 docker compose -f docker-compose.yaml up -d event_service mongo_db
 ```
+
+### AUTH
+
+#### 인증 전략: 쿠키 기반 인증
+
+인증 서비스는 다음과 같은 이유로 쿠키 기반 인증을 사용합니다:
+
+1. **동일 출처 보안**
+
+   - 대부분의 서비스(이벤트 등)가 동일한 도메인에서 제공될 예정
+   - 쿠키는 동일 도메인에 대한 요청에 자동으로 포함됨
+
+2. **향상된 보안**
+
+   - `httpOnly` 플래그로 JavaScript에서 토큰 접근 방지
+   - `secure` 플래그로 HTTPS 통신에서만 토큰 전송
+   - `sameSite: strict`로 CSRF 공격 방지
+   - 토큰이 응답 본문이나 localStorage에 노출되지 않음
+
+3. **자동 토큰 관리**
+
+   - 브라우저가 자동으로 쿠키 만료 처리
+   - 클라이언트 측 토큰 저장 로직 불필요
+   - XSS 공격을 통한 토큰 유출 위험 감소
+
+4. **단순화된 클라이언트 구현**
+   - 요청에 토큰을 수동으로 첨부할 필요 없음
+   - 자동 토큰 갱신 처리
+   - 원활한 인증으로 향상된 사용자 경험
+
+서비스는 두 가지 유형의 쿠키를 사용합니다:
+
+- 액세스 토큰 (15분 만료)
+- 리프레시 토큰 (7일 만료)

@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { SignUpDto } from './dto/sign-up.dto';
-import { SignInDto } from './dto/sign-in.dto';
+import { SignUpDto } from './dtos/sign-up.dto';
+import { SignInDto } from './dtos/sign-in.dto';
 import { User } from './domain/user.domain';
 import { UserRepository } from './infrastructure/repositories/user.repository.interface';
 import { USER_REPOSITORY } from './infrastructure/repositories/user.repository.interface';
@@ -30,7 +30,11 @@ export class AuthServiceImpl implements AuthService {
     return user;
   }
 
-  async signIn(signInDto: SignInDto): Promise<AuthResponse> {
+  async signIn(signInDto: SignInDto): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    user: User;
+  }> {
     const user = await this.userRepository.findByEmail(signInDto.email);
     const validatedUser = AuthActions.validateUserCredentials(
       user,
@@ -40,12 +44,12 @@ export class AuthServiceImpl implements AuthService {
       ),
     );
 
-    const { access_token, refresh_token } =
+    const { accessToken, refreshToken } =
       await this.generateTokens(validatedUser);
 
     return {
-      access_token,
-      refresh_token,
+      accessToken,
+      refreshToken,
       user: validatedUser,
     };
   }
@@ -60,9 +64,9 @@ export class AuthServiceImpl implements AuthService {
   }
 
   async refreshToken(
-    refresh_token: string,
-  ): Promise<{ access_token: string; user: User }> {
-    const payload = await this.jwtService.verifyAsync(refresh_token, {
+    refreshToken: string,
+  ): Promise<{ accessToken: string; user: User }> {
+    const payload = await this.jwtService.verifyAsync(refreshToken, {
       secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
     });
     AuthActions.validateRefreshToken(payload);
@@ -72,19 +76,19 @@ export class AuthServiceImpl implements AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const access_token = await this.generateAccessToken(user);
-    return { access_token, user };
+    const accessToken = await this.generateAccessToken(user);
+    return { accessToken, user };
   }
 
   private async generateTokens(
     user: User,
-  ): Promise<{ access_token: string; refresh_token: string }> {
-    const [access_token, refresh_token] = await Promise.all([
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const [accessToken, refreshToken] = await Promise.all([
       this.generateToken(user, 'access'),
       this.generateToken(user, 'refresh'),
     ]);
 
-    return { access_token, refresh_token };
+    return { accessToken, refreshToken };
   }
 
   private async generateAccessToken(user: User): Promise<string> {

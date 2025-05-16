@@ -13,8 +13,8 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './interfaces/auth.interface';
-import { SignUpDto } from './dto/sign-up.dto';
-import { SignInDto } from './dto/sign-in.dto';
+import { SignUpDto } from './dtos/sign-up.dto';
+import { SignInDto } from './dtos/sign-in.dto';
 import { AuthCookieInterceptor } from './interceptors/auth-cookie.interceptor';
 import { COOKIE_NAMES } from './constants/cookie.constants';
 import { AUTH_SERVICE } from './constants/auth.constants';
@@ -24,7 +24,7 @@ import {
   AuthLoginResponse,
   createAuthResponse,
   createAuthLoginResponse,
-} from './dto/auth.response.dto';
+} from './dtos/auth.response.dto';
 import { Response } from 'express';
 
 @ApiTags('auth')
@@ -38,11 +38,19 @@ export class AuthController {
 
   @Post('signup/email')
   @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(AuthCookieInterceptor)
   @ApiOperation({ summary: 'Sign up with email' })
   @ApiResponse({ status: HttpStatus.CREATED, type: AuthResponse })
   async signUp(@Body() signUpDto: SignUpDto) {
     const user = await this.authService.signUp(signUpDto);
-    return createAuthResponse(user);
+    const { accessToken, refreshToken } = await this.authService.signIn({
+      email: signUpDto.email,
+      password: signUpDto.password,
+    });
+    return createAuthLoginResponse(user, {
+      jwt: accessToken,
+      jwtRefresh: refreshToken,
+    });
   }
 
   @Post('signin')
@@ -51,11 +59,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Sign in with email and password' })
   @ApiResponse({ status: HttpStatus.OK, type: AuthLoginResponse })
   async signIn(@Body() signInDto: SignInDto) {
-    const { user, access_token, refresh_token } =
+    const { user, accessToken, refreshToken } =
       await this.authService.signIn(signInDto);
     return createAuthLoginResponse(user, {
-      jwt: access_token,
-      jwtRefresh: refresh_token,
+      jwt: accessToken,
+      jwtRefresh: refreshToken,
     });
   }
 
