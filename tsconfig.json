@@ -19,9 +19,7 @@
     "baseUrl": "./",
     "incremental": true,
     "paths": {
-      "src/*": ["src/*"],
-      "tests/*": ["__tests__/*"],
-      "@app/common": ["libs/common/src"],
+      "@app/*": ["libs/*"],
       "@app/common/*": ["libs/common/src/*"]
     },
     "resolveJsonModule": true

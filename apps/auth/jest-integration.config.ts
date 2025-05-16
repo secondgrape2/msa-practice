@@ -13,7 +13,7 @@ const config: Config = {
   coverageDirectory: 'coverage/apps/auth',
   testEnvironment: 'node',
   moduleNameMapper: {
-    '^@app/(.*)$': '<rootDir>/apps/auth/src/$1',
+    '^@app/common/(.*)$': '<rootDir>/libs/common/src/$1',
   },
   modulePaths: ['<rootDir>/apps/auth/src'],
 };

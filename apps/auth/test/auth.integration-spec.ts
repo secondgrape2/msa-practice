@@ -49,7 +49,7 @@ describe('AuthController (e2e)', () => {
     }
   });
 
-  describe('POST /auth/signup/email', () => {
+  describe('POST /auth/v1/signup/email', () => {
     const signUpDto = {
       email: 'test@example.com',
       password: 'password123',
@@ -57,7 +57,7 @@ describe('AuthController (e2e)', () => {
 
     it('should create a new user', () => {
       return request(app.getHttpServer())
-        .post('/auth/signup/email')
+        .post('/auth/v1/signup/email')
         .send(signUpDto)
         .expect(201)
         .expect((res: Response) => {
@@ -72,12 +72,12 @@ describe('AuthController (e2e)', () => {
 
     it('should not create a user with existing email', async () => {
       await request(app.getHttpServer())
-        .post('/auth/signup/email')
+        .post('/auth/v1/signup/email')
         .send(signUpDto)
         .expect(201);
 
       return request(app.getHttpServer())
-        .post('/auth/signup/email')
+        .post('/auth/v1/signup/email')
         .send(signUpDto)
         .expect(401)
         .expect((res: Response) => {
@@ -94,14 +94,14 @@ describe('AuthController (e2e)', () => {
 
     beforeEach(async () => {
       await request(app.getHttpServer())
-        .post('/auth/signup/email')
+        .post('/auth/v1/signup/email')
         .send(signUpDto)
         .expect(201);
     });
 
     it('should sign in with valid credentials', () => {
       return request(app.getHttpServer())
-        .post('/auth/signin')
+        .post('/auth/v1/signin')
         .send(signUpDto)
         .expect(200)
         .expect((res: Response) => {
@@ -115,7 +115,7 @@ describe('AuthController (e2e)', () => {
 
     it('should not sign in with invalid credentials', () => {
       return request(app.getHttpServer())
-        .post('/auth/signin')
+        .post('/auth/v1/signin')
         .send({
           email: signUpDto.email,
           password: 'wrongpassword',
@@ -183,10 +183,10 @@ describe('AuthController (e2e)', () => {
   //   });
   // });
 
-  describe('POST /auth/logout', () => {
+  describe('POST /auth/v1/logout', () => {
     it('should logout successfully', async () => {
       await request(app.getHttpServer())
-        .post('/auth/logout')
+        .post('/auth/v1/logout')
         .expect(200)
         .expect((res: Response) => {
           expect(res.body.message).toBe('Successfully logged out');
