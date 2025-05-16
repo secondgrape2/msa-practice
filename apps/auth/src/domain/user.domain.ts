@@ -5,6 +5,7 @@ export interface User {
   roles: string[];
   createdAt: Date;
   updatedAt: Date;
+  lastLoginAt: Date;
 }
 
 export interface DomainEntity<T> {

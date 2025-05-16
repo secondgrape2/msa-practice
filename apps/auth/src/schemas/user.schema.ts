@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { USER_ROLE, UserRole } from '../constants/user.constants';
 import { User } from '../domain/user.domain';
 
@@ -8,7 +8,7 @@ export type UserDocument = UserEntity & Document;
 const USER_COLLECTION_NAME = 'users';
 @Schema({ timestamps: true, collection: USER_COLLECTION_NAME })
 export class UserEntity {
-  _id: string;
+  _id: Types.ObjectId;
 
   @Prop({ required: true, unique: true })
   email: string;
@@ -23,6 +23,9 @@ export class UserEntity {
   })
   roles: UserRole[];
 
+  @Prop({ required: true })
+  lastLoginAt: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,4 +39,5 @@ export const toUserDomain = (doc: UserDocument): User => ({
   roles: doc.roles,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
+  lastLoginAt: doc.lastLoginAt,
 });
