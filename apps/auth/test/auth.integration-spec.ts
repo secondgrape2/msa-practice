@@ -7,6 +7,7 @@ import { Connection } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { Response } from 'supertest';
 import { nanoid } from 'nanoid';
+import cookieParser from 'cookie-parser';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -25,6 +26,7 @@ describe('AuthController (e2e)', () => {
       .compile();
 
     app = moduleFixture.createNestApplication();
+    app.use(cookieParser());
     dbConnection = moduleFixture.get<Connection>(getConnectionToken());
     await app.init();
   }, 30000); // Increase timeout for setup
@@ -101,7 +103,7 @@ describe('AuthController (e2e)', () => {
 
     it('should sign in with valid credentials', () => {
       return request(app.getHttpServer())
-        .post('/auth/v1/signin')
+        .post('/auth/v1/signin/email')
         .send(signUpDto)
         .expect(200)
         .expect((res: Response) => {
@@ -115,7 +117,7 @@ describe('AuthController (e2e)', () => {
 
     it('should not sign in with invalid credentials', () => {
       return request(app.getHttpServer())
-        .post('/auth/v1/signin')
+        .post('/auth/v1/signin/email')
         .send({
           email: signUpDto.email,
           password: 'wrongpassword',
@@ -185,8 +187,24 @@ describe('AuthController (e2e)', () => {
 
   describe('POST /auth/v1/logout', () => {
     it('should logout successfully', async () => {
+      // 1. 먼저 회원가입
+      const signupResponse = await request(app.getHttpServer())
+        .post('/auth/v1/signup/email')
+        .send({
+          email: 'test@example.com',
+          password: 'password123',
+        })
+        .expect(201);
+
+      // 2. signup 후에 응답에서 쿠키 추출
+      const cookies = signupResponse.headers['set-cookie'];
+      if (!cookies || !Array.isArray(cookies)) {
+        throw new Error('No cookies received from signup response');
+      }
+
       await request(app.getHttpServer())
         .post('/auth/v1/logout')
+        .set('Cookie', cookies)
         .expect(200)
         .expect((res: Response) => {
           expect(res.body.message).toBe('Successfully logged out');

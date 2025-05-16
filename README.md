@@ -49,7 +49,7 @@ yarn test:integration:event
 ## Docker Compose
 
 ```bash
-docker compose -f docker-compose.yaml up -d
+docker compose -f docker-compose.yaml up -d --build
 ```
 
 ## Docker Compose auth 서비스

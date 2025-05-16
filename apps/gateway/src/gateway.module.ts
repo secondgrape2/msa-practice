@@ -1,17 +1,27 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
-import { GatewayController } from './gateway.controller';
+import { AuthGatewayController } from './auth-gateway.controller';
 import { GatewayService } from './gateway.service';
+import {
+  AuthCoreModule,
+  JWT_SIGNING_KEY_PROVIDER,
+  JwtSigningKeyProvider,
+} from '@app/common/auth-core';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
     HttpModule,
+    AuthCoreModule,
+    JwtModule.registerAsync({
+      imports: [AuthCoreModule],
+      useFactory: async (jwtKeyProvider: JwtSigningKeyProvider) => ({
+        secret: await jwtKeyProvider.getSigningKey('HS256'),
+      }),
+      inject: [JWT_SIGNING_KEY_PROVIDER],
+    }),
   ],
-  controllers: [GatewayController],
+  controllers: [AuthGatewayController],
   providers: [GatewayService],
 })
 export class GatewayModule {}

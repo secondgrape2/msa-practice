@@ -8,14 +8,13 @@ import {
   HttpStatus,
   UnauthorizedException,
   Inject,
-  ClassSerializerInterceptor,
   Res,
+  UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { AuthService } from './interfaces/auth.interface';
 import { SignUpDto, SignInDto } from '@app/common/auth-core/dtos';
 import { AuthCookieInterceptor } from './interceptors/auth-cookie.interceptor';
-import { COOKIE_NAMES } from './constants/cookie.constants';
+import { COOKIE_NAMES, removeCookieOption } from './constants/cookie.constants';
 import { AUTH_SERVICE } from './constants/auth.constants';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import {
@@ -25,15 +24,20 @@ import {
   createAuthLoginResponse,
 } from '@app/common/auth-core/dtos/auth.response.dto';
 import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { JwtAuthGuard } from '@app/common/auth-core/guards/jwt-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth/v1')
-@UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
+  private readonly origin: string | undefined;
   constructor(
     @Inject(AUTH_SERVICE)
     private readonly authService: AuthService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.origin = this.configService.get('API_SERVER_ORIGIN', { infer: true });
+  }
 
   @Post('signup/email')
   @HttpCode(HttpStatus.CREATED)
@@ -52,7 +56,7 @@ export class AuthController {
     });
   }
 
-  @Post('signin')
+  @Post('signin/email')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(AuthCookieInterceptor)
   @ApiOperation({ summary: 'Sign in with email and password' })
@@ -90,6 +94,7 @@ export class AuthController {
   // }
 
   @Post('logout')
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Log out' })
   @ApiResponse({
@@ -97,8 +102,8 @@ export class AuthController {
     description: 'Successfully logged out',
   })
   async logOut(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie(COOKIE_NAMES.accessToken);
-    res.clearCookie(COOKIE_NAMES.refreshToken);
+    res.clearCookie(COOKIE_NAMES.accessToken, removeCookieOption(this.origin));
+    res.clearCookie(COOKIE_NAMES.refreshToken, removeCookieOption(this.origin));
 
     res.status(HttpStatus.OK).json({ message: 'Successfully logged out' });
   }

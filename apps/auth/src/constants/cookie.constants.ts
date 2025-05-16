@@ -17,6 +17,7 @@ export const COOKIE_NAMES = {
 export type CookieName = (typeof COOKIE_NAMES)[keyof typeof COOKIE_NAMES];
 
 export interface CookieOptions {
+  expires?: Date;
   httpOnly: boolean;
   secure: boolean;
   sameSite: CookieSameSite;
@@ -59,3 +60,17 @@ export const getRefreshTokenCookieOptions = (
   ...getCookieOptions(origin),
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 });
+
+export const removeCookieOption = (origin?: string) => {
+  const domain = origin ? getDomainFromOrigin(origin) : undefined;
+  const option: CookieOptions = {
+    expires: new Date(1970, 1, 1),
+    httpOnly: true,
+    path: '/',
+    ...(domain && { domain }),
+    secure: true,
+    sameSite: COOKIE_SAME_SITE.strict,
+  };
+
+  return option;
+};

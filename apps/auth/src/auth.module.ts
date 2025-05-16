@@ -9,18 +9,22 @@ import { AUTH_SERVICE } from './constants/auth.constants';
 import { USER_REPOSITORY } from './infrastructure/repositories/user.repository.interface';
 import { MongooseUserRepository } from './infrastructure/repositories/mongoose-user.repository';
 import { EnvironmentVariables } from './config';
+import {
+  AuthCoreModule,
+  JWT_SIGNING_KEY_PROVIDER,
+  JwtSigningKeyProvider,
+} from '@app/common/auth-core';
 
 @Module({
   imports: [
+    AuthCoreModule,
     MongooseModule.forFeature([{ name: UserEntity.name, schema: UserSchema }]),
     JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (
-        configService: ConfigService<EnvironmentVariables, true>,
-      ) => ({
-        secret: configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
+      imports: [AuthCoreModule],
+      useFactory: async (jwtKeyProvider: JwtSigningKeyProvider) => ({
+        secret: await jwtKeyProvider.getSigningKey('HS256'),
       }),
-      inject: [ConfigService],
+      inject: [JWT_SIGNING_KEY_PROVIDER],
     }),
   ],
   controllers: [AuthController],
