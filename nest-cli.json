@@ -1,24 +1,15 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/msa-practice/src",
+  "sourceRoot": "apps/auth/src",
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": true,
-    "tsConfigPath": "apps/msa-practice/tsconfig.app.json"
+    "tsConfigPath": "apps/auth/tsconfig.app.json"
   },
   "monorepo": true,
-  "root": "apps/msa-practice",
+  "root": "apps/auth",
   "projects": {
-    "msa-practice": {
-      "type": "application",
-      "root": "apps/msa-practice",
-      "entryFile": "main",
-      "sourceRoot": "apps/msa-practice/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/msa-practice/tsconfig.app.json"
-      }
-    },
     "gateway": {
       "type": "application",
       "root": "apps/gateway",
