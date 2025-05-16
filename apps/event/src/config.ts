@@ -1,5 +1,5 @@
-import { NestApplicationOptions } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { NestApplicationOptions } from '@nestjs/common';
 import {
   IsEnum,
   IsNotEmpty,
@@ -37,25 +37,6 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   @IsString()
   MONGODB_URI: string;
-
-  @IsNotEmpty()
-  @IsString()
-  JWT_ACCESS_TOKEN_SECRET: string;
-
-  @IsNotEmpty()
-  @IsString()
-  JWT_ACCESS_TOKEN_EXPIRES_IN: string;
-
-  @IsNotEmpty()
-  @IsString()
-  JWT_REFRESH_TOKEN_SECRET: string;
-
-  @IsNotEmpty()
-  @IsString()
-  JWT_REFRESH_TOKEN_EXPIRES_IN: string;
-
-  @IsString()
-  API_SERVER_ORIGIN: string;
 }
 
 export function validate(config: Record<string, unknown>) {
