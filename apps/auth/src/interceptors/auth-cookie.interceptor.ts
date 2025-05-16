@@ -1,33 +1,56 @@
 import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
   CallHandler,
+  ExecutionContext,
+  Injectable,
+  Logger,
+  NestInterceptor,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
+import { EnvironmentVariables } from '../config';
 import {
   COOKIE_NAMES,
-  ACCESS_TOKEN_COOKIE_OPTIONS,
-  REFRESH_TOKEN_COOKIE_OPTIONS,
+  getAccessTokenCookieOptions,
+  getRefreshTokenCookieOptions,
 } from '../constants/cookie.constants';
+
+interface TokenResponse {
+  token?: {
+    jwt?: string;
+    jwtRefresh?: string;
+  };
+}
 
 @Injectable()
 export class AuthCookieInterceptor implements NestInterceptor {
+  private readonly origin: string | undefined;
+  private readonly logger = new Logger(AuthCookieInterceptor.name);
+
+  constructor(
+    private readonly configService: ConfigService<EnvironmentVariables, true>,
+  ) {
+    this.origin = this.configService.get('API_SERVER_ORIGIN', { infer: true });
+  }
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const res = context.switchToHttp().getResponse<Response>();
 
     return next.handle().pipe(
-      map((response) => {
-        const token = response?.token;
-        if (token) {
-          const { jwt, jwtRefresh } = token;
+      map((response: TokenResponse) => {
+        if (!response?.token) {
+          return response;
+        }
+
+        const { jwt, jwtRefresh } = response.token;
+
+        try {
           if (jwt) {
             res.cookie(
               COOKIE_NAMES.accessToken,
               jwt,
-              ACCESS_TOKEN_COOKIE_OPTIONS,
+              getAccessTokenCookieOptions(this.origin),
             );
           }
 
@@ -35,12 +58,15 @@ export class AuthCookieInterceptor implements NestInterceptor {
             res.cookie(
               COOKIE_NAMES.refreshToken,
               jwtRefresh,
-              REFRESH_TOKEN_COOKIE_OPTIONS,
+              getRefreshTokenCookieOptions(this.origin),
             );
           }
+        } catch (error) {
+          this.logger.error('Failed to set auth cookies:', error);
         }
 
-        return response;
+        const { token, ...restResponse } = response;
+        return restResponse;
       }),
     );
   }

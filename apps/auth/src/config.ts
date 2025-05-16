@@ -54,6 +54,9 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   @IsString()
   JWT_REFRESH_TOKEN_EXPIRES_IN: string;
+
+  @IsString()
+  API_SERVER_ORIGIN: string;
 }
 
 export function validate(config: Record<string, unknown>) {

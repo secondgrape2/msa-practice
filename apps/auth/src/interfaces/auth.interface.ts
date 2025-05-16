@@ -25,9 +25,13 @@ export interface SignInDto {
 
 export interface AuthService {
   signUp(signUpDto: SignUpDto): Promise<User>;
-  signIn(signInDto: SignInDto): Promise<AuthResponse>;
+  signIn(signInDto: SignInDto): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    user: User;
+  }>;
   validateUser(email: string, password: string): Promise<User>;
   refreshToken(
-    refresh_token: string,
-  ): Promise<{ access_token: string; user: User }>;
+    refreshToken: string,
+  ): Promise<{ accessToken: string; user: User }>;
 }
