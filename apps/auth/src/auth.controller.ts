@@ -13,8 +13,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './interfaces/auth.interface';
-import { SignUpDto } from './dtos/sign-up.dto';
-import { SignInDto } from './dtos/sign-in.dto';
+import { SignUpDto, SignInDto } from '@app/common/auth-core/dtos';
 import { AuthCookieInterceptor } from './interceptors/auth-cookie.interceptor';
 import { COOKIE_NAMES } from './constants/cookie.constants';
 import { AUTH_SERVICE } from './constants/auth.constants';
@@ -24,11 +23,11 @@ import {
   AuthLoginResponse,
   createAuthResponse,
   createAuthLoginResponse,
-} from './dtos/auth.response.dto';
+} from '@app/common/auth-core/dtos/auth.response.dto';
 import { Response } from 'express';
 
 @ApiTags('auth')
-@Controller('auth')
+@Controller('auth/v1')
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
   constructor(
