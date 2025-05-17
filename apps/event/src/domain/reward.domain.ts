@@ -1,4 +1,4 @@
-import { RewardType } from '../constants/reward.constants';
+import { RewardType } from '@app/common/constants/reward.constants';
 
 /**
  * Represents the details for a point-based reward

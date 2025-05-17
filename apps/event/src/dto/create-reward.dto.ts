@@ -7,8 +7,11 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { REWARD_TYPE, RewardType } from '../constants/reward.constants';
 import { RewardDetails } from '../domain/reward.domain';
+import {
+  REWARD_TYPE,
+  RewardType,
+} from '@app/common/constants/reward.constants';
 
 export class CreateRewardDto {
   @IsNotEmpty()

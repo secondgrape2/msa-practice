@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { CreateGameEventDto } from './dto/create-game-event.dto';
+import { CreateGameEventDto } from '@app/common/dto/game-event.dto';
 import { GameEvent } from './domain/game-event.domain';
 import {
   GameEventRepository,

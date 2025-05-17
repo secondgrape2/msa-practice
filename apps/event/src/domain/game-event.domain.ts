@@ -44,7 +44,7 @@ export interface CompoundCondition {
  * Represents the configuration for event conditions
  * Can be either a compound condition or an array of base condition rules
  */
-export type ConditionConfig = CompoundCondition | BaseConditionRule[];
+export type ConditionConfig = CompoundCondition;
 
 /**
  * Represents a game event with its conditions and metadata
@@ -82,3 +82,6 @@ export interface GameEvent {
   /** Last update timestamp */
   updatedAt: Date;
 }
+
+export interface CreateGameEvent
+  extends Omit<GameEvent, 'id' | 'createdAt' | 'updatedAt'> {}
