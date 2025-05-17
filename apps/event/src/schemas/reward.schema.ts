@@ -1,7 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Reward, RewardDetails } from '../domain/reward.domain';
-import { REWARD_TYPE, RewardType } from '../constants/reward.constants';
+import {
+  REWARD_TYPE,
+  RewardType,
+} from '@app/common/constants/reward.constants';
 
 export type RewardDocument = RewardEntity & Document;
 

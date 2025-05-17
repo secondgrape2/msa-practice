@@ -1,9 +1,9 @@
-import { GameEvent } from '../../domain/game-event.domain';
+import { CreateGameEvent, GameEvent } from '../../domain/game-event.domain';
 
 /**
  * Symbol token for dependency injection of the game event repository
  */
-export const GAME_EVENT_REPOSITORY = Symbol('GAME_EVENT_REPOSITORY');
+export const GAME_EVENT_REPOSITORY = 'GAME_EVENT_REPOSITORY';
 
 /**
  * Repository interface for managing game event data
@@ -15,7 +15,7 @@ export interface GameEventRepository {
    * @param data - Partial game event data to create
    * @returns Promise resolving to the created game event
    */
-  create(data: Partial<GameEvent>): Promise<GameEvent>;
+  create(data: CreateGameEvent): Promise<GameEvent>;
 
   /**
    * Retrieves all game events
