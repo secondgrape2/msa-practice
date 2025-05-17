@@ -34,7 +34,7 @@ export class AuthCookieInterceptor implements NestInterceptor {
     this.origin = this.configService.get('API_SERVER_ORIGIN', { infer: true });
   }
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const res = context.switchToHttp().getResponse<Response>();
 
     return next.handle().pipe(

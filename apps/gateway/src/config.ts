@@ -38,6 +38,10 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   @IsString()
   AUTH_SERVICE_URL: string;
+
+  @IsNotEmpty()
+  @IsString()
+  EVENT_SERVICE_URL: string;
 }
 
 export function validate(config: Record<string, unknown>) {

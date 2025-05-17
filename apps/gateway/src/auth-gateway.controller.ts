@@ -13,7 +13,9 @@ import { Request, Response } from 'express';
 import { AxiosError } from 'axios';
 import { JwtAuthGuard } from '@app/common/auth-core/guards/jwt-auth.guard';
 import { SignUpDto, SignInDto } from '@app/common/auth-core/dtos';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller('api/auth/v1')
 export class AuthGatewayController {
   constructor(private readonly gatewayService: GatewayService) {}
