@@ -24,6 +24,7 @@ export class EventGatewayController {
     @Request() req: RequestWithUser,
   ) {
     // TODO: Forward the request to the event service
+    console.log(req.user);
     return {
       message: 'Event creation endpoint',
       user: req.user,
@@ -31,7 +32,6 @@ export class EventGatewayController {
   }
 
   @Get()
-  @Roles(ROLE.USER, ROLE.OPERATOR, ROLE.ADMIN)
   async findEvents(@Request() req: RequestWithUser) {
     // TODO:Forward the request to the event service
     return {
@@ -41,7 +41,6 @@ export class EventGatewayController {
   }
 
   @Get(':id')
-  @Roles(ROLE.USER, ROLE.OPERATOR, ROLE.ADMIN)
   async getEvent(@Request() req: RequestWithUser) {
     // TODO: Forward the request to the event service
     return {

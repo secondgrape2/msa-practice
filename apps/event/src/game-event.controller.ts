@@ -1,29 +1,42 @@
+import { ROLE } from '@app/common/auth-core/constants/role.constants';
+import { Roles } from '@app/common/auth-core/decorators/roles.decorator';
+import { JwtAuthGuard } from '@app/common/auth-core/guards/jwt-auth.guard';
+import { RolesGuard } from '@app/common/auth-core/guards/roles.guard';
 import {
+  GameEventResponseDto,
+  GameEventWithRewardsResponseDto,
+} from '@app/common/dto/game-event-response.dto';
+import { CreateGameEventDto } from '@app/common/dto/game-event.dto';
+import { RewardResponseDto } from '@app/common/dto/reward-response.dto';
+import { CreateRewardDto } from '@app/common/dto/reward.dto';
+import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
+  Inject,
   Param,
-  HttpException,
-  HttpStatus,
+  Post,
   UseGuards,
 } from '@nestjs/common';
-import { GameEventService } from './game-event.service';
-import { GameEvent } from './domain/game-event.domain';
-import { RewardService } from './reward.service';
-import { CreateRewardDto } from './dto/create-reward.dto';
-import { Reward } from './domain/reward.domain';
-import { RolesGuard } from '@app/common/auth-core/guards/roles.guard';
-import { JwtAuthGuard } from '@app/common/auth-core/guards/jwt-auth.guard';
-import { Roles } from '@app/common/auth-core/decorators/roles.decorator';
-import { ROLE } from '@app/common/auth-core/constants/role.constants';
-import { CreateGameEventDto } from '@app/common/dto/game-event.dto';
+import { plainToInstance } from 'class-transformer';
+import { GameEventManagementService } from './application/game-event-management.service';
+import {
+  GAME_EVENT_SERVICE,
+  GameEventService,
+} from './application/interfaces/game-event.interface';
+import {
+  REWARD_SERVICE,
+  RewardService,
+} from './application/interfaces/reward.interface';
 
 @Controller('events/v1')
 export class GameEventController {
   constructor(
+    @Inject(GAME_EVENT_SERVICE)
     private readonly gameEventService: GameEventService,
+    @Inject(REWARD_SERVICE)
     private readonly rewardService: RewardService,
+    private readonly gameEventManagementService: GameEventManagementService,
   ) {}
 
   @Post('admin')
@@ -31,15 +44,11 @@ export class GameEventController {
   @Roles(ROLE.OPERATOR, ROLE.ADMIN)
   async create(
     @Body() createGameEventDto: CreateGameEventDto,
-  ): Promise<GameEvent> {
-    try {
-      return await this.gameEventService.create(createGameEventDto);
-    } catch (error) {
-      throw new HttpException(
-        'Failed to create game event',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  ): Promise<GameEventResponseDto> {
+    const event = await this.gameEventService.create(createGameEventDto);
+    return plainToInstance(GameEventResponseDto, event, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Post('admin/:eventId/rewards')
@@ -48,117 +57,66 @@ export class GameEventController {
   async addReward(
     @Param('eventId') eventId: string,
     @Body() createRewardDto: CreateRewardDto,
-  ): Promise<Reward> {
-    try {
-      // Verify event exists
-      const event = await this.gameEventService.findOne(eventId);
-      if (!event) {
-        throw new HttpException('Game event not found', HttpStatus.NOT_FOUND);
-      }
-
-      // Set eventId from path parameter
-      createRewardDto.eventId = eventId;
-      return await this.rewardService.create(createRewardDto);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        'Failed to add reward to game event',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  ): Promise<RewardResponseDto> {
+    const reward = await this.gameEventManagementService.addRewardToEvent(
+      eventId,
+      createRewardDto,
+    );
+    return plainToInstance(RewardResponseDto, reward, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Get()
-  async findAll(): Promise<GameEvent[]> {
-    try {
-      return await this.gameEventService.findAll();
-    } catch (error) {
-      throw new HttpException(
-        'Failed to fetch game events',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  async findAll(): Promise<GameEventResponseDto[]> {
+    const events = await this.gameEventService.findAll();
+    return plainToInstance(GameEventResponseDto, events, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Get(':id')
   async findOne(
     @Param('id') id: string,
-  ): Promise<GameEvent & { rewards: Reward[] }> {
-    try {
-      const gameEvent = await this.gameEventService.findOne(id);
-      if (!gameEvent) {
-        throw new HttpException('Game event not found', HttpStatus.NOT_FOUND);
-      }
-
-      // Fetch associated rewards
-      const rewards = await this.rewardService.findByEventId(id);
-
-      return {
-        ...gameEvent,
-        rewards,
-      };
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        'Failed to fetch game event',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  ): Promise<GameEventWithRewardsResponseDto> {
+    const eventWithRewards =
+      await this.gameEventManagementService.getEventWithRewards(id);
+    return plainToInstance(GameEventWithRewardsResponseDto, eventWithRewards, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Get('active/current')
-  async findActive(): Promise<GameEvent[]> {
-    try {
-      return await this.gameEventService.findActive();
-    } catch (error) {
-      throw new HttpException(
-        'Failed to fetch active game events',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  async findActive(): Promise<GameEventResponseDto[]> {
+    const events = await this.gameEventService.findActive();
+    return plainToInstance(GameEventResponseDto, events, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Get('admin/rewards/history')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE.AUDITOR, ROLE.ADMIN)
-  async getRewardHistory(): Promise<Reward[]> {
-    try {
-      return await this.rewardService.findAll();
-    } catch (error) {
-      throw new HttpException(
-        'Failed to fetch reward history',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  async getRewardHistory(): Promise<RewardResponseDto[]> {
+    const rewards = await this.rewardService.findAll();
+    return plainToInstance(RewardResponseDto, rewards, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Post(':eventId/claim')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE.USER, ROLE.ADMIN)
-  async claimReward(@Param('eventId') eventId: string): Promise<Reward> {
-    try {
-      const event = await this.gameEventService.findOne(eventId);
-      if (!event) {
-        throw new HttpException('Game event not found', HttpStatus.NOT_FOUND);
-      }
-
-      // TODO: Implement reward claiming logic
-      throw new HttpException(
-        'Reward claiming not implemented yet',
-        HttpStatus.NOT_IMPLEMENTED,
-      );
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        'Failed to claim reward',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  async claimReward(
+    @Param('eventId') eventId: string,
+    @Body('userId') userId: string,
+  ): Promise<RewardResponseDto> {
+    const reward = await this.gameEventManagementService.claimReward(
+      eventId,
+      userId,
+    );
+    return plainToInstance(RewardResponseDto, reward, {
+      excludeExtraneousValues: true,
+    });
   }
 }

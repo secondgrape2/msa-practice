@@ -5,9 +5,10 @@ import {
   GameEventRepository,
   GAME_EVENT_REPOSITORY,
 } from './infrastructure/repositories/game-event.repository.interface';
+import { GameEventService } from './application/interfaces/game-event.interface';
 
 @Injectable()
-export class GameEventService {
+export class GameEventServiceImpl implements GameEventService {
   constructor(
     @Inject(GAME_EVENT_REPOSITORY)
     private readonly gameEventRepository: GameEventRepository,

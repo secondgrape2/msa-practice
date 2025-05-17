@@ -8,6 +8,7 @@ import {
   JwtSigningKeyProvider,
 } from '@app/common/auth-core';
 import { JwtModule } from '@nestjs/jwt';
+import { EventGatewayController } from './event-gateway.controller';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { JwtModule } from '@nestjs/jwt';
       inject: [JWT_SIGNING_KEY_PROVIDER],
     }),
   ],
-  controllers: [AuthGatewayController],
+  controllers: [AuthGatewayController, EventGatewayController],
   providers: [GatewayService],
 })
 export class GatewayModule {}

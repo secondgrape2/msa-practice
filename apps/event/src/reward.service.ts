@@ -1,17 +1,18 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { CreateRewardDto } from './dto/create-reward.dto';
+import { CreateRewardDto } from '@app/common/dto/reward.dto';
 import { Reward } from './domain/reward.domain';
 import {
   RewardRepository,
   REWARD_REPOSITORY,
 } from './infrastructure/repositories/reward.repository.interface';
+import { RewardService } from './application/interfaces/reward.interface';
 
 /**
  * Service for managing rewards
  * Handles business logic for reward operations
  */
 @Injectable()
-export class RewardService {
+export class RewardServiceImpl implements RewardService {
   constructor(
     @Inject(REWARD_REPOSITORY)
     private readonly rewardRepository: RewardRepository,

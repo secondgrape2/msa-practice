@@ -72,9 +72,9 @@ export interface GameEvent {
   /** Configuration for event conditions */
   conditionConfig: ConditionConfig;
   /** Start date of the event */
-  startDate: Date;
+  startAt: Date;
   /** End date of the event */
-  endDate: Date;
+  endAt: Date;
   /** Whether the event is currently active */
   isActive: boolean;
   /** Creation timestamp */

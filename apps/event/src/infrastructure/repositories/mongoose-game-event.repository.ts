@@ -36,8 +36,8 @@ export class MongooseGameEventRepository implements GameEventRepository {
     const gameEvents = await this.gameEventModel
       .find({
         isActive: true,
-        startDate: { $lte: now },
-        endDate: { $gte: now },
+        startAt: { $lte: now },
+        endAt: { $gte: now },
       })
       .exec();
     return gameEvents.map(toGameEventDomain);

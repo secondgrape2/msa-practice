@@ -11,8 +11,8 @@ erDiagram
         string conditionsDescription
         string conditionType
         object conditionConfig
-        date startDate
-        date endDate
+        date startAt
+        date endAt
         boolean isActive
         date createdAt
         date updatedAt
@@ -73,8 +73,8 @@ Event와 Reward의 관계를 1:N(일대다)으로 설계한 이유는 다음과 
       ]
     }
     ```
-- `startDate`: 이벤트 시작일
-- `endDate`: 이벤트 종료일
+- `startAt`: 이벤트 시작일
+- `endAt`: 이벤트 종료일
 - `isActive`: 현재 활성화 상태 여부 (인덱스 적용)
 - `createdAt`: 생성 시간
 - `updatedAt`: 마지막 수정 시간

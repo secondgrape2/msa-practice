@@ -26,10 +26,10 @@ export class GameEventEntity {
   conditionConfig: ConditionConfig;
 
   @Prop({ required: true, type: Date })
-  startDate: Date;
+  startAt: Date;
 
   @Prop({ required: true, type: Date })
-  endDate: Date;
+  endAt: Date;
 
   @Prop({ required: true, default: false, index: true })
   isActive: boolean;
@@ -47,8 +47,8 @@ export const toGameEventDomain = (doc: GameEventDocument): GameEvent => ({
   conditionsDescription: doc.conditionsDescription,
   conditionType: doc.conditionType,
   conditionConfig: doc.conditionConfig,
-  startDate: doc.startDate,
-  endDate: doc.endDate,
+  startAt: doc.startAt,
+  endAt: doc.endAt,
   isActive: doc.isActive,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,

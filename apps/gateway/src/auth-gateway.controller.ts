@@ -19,13 +19,21 @@ export class AuthGatewayController {
   constructor(private readonly gatewayService: GatewayService) {}
 
   @Post('signup/email')
-  async register(@Body() signUpDto: SignUpDto) {
+  async register(
+    @Body() signUpDto: SignUpDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     try {
-      const { data } = await this.gatewayService.proxyToAuthService(
+      const { data, cookies } = await this.gatewayService.proxyToAuthService(
         '/auth/v1/signup/email',
         'POST',
         signUpDto,
       );
+
+      if (cookies) {
+        res.setHeader('Set-Cookie', cookies);
+      }
+
       return {
         statusCode: HttpStatus.CREATED,
         data,
