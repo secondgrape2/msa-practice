@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { USER_ROLE, UserRole } from '../constants/user.constants';
-import { User } from '../domain/user.domain';
+import { ROLE, Role } from '@app/common/auth-core/constants/role.constants';
+import { User } from '../interfaces/auth.interface';
 
 export type UserDocument = UserEntity & Document;
 
@@ -18,13 +18,13 @@ export class UserEntity {
 
   @Prop({
     type: [String],
-    enum: Object.values(USER_ROLE),
-    default: [USER_ROLE.user],
+    enum: Object.values(ROLE),
+    default: [ROLE.USER],
   })
-  roles: UserRole[];
+  roles: Role[];
 
-  @Prop({ required: true })
-  lastLoginAt: Date;
+  @Prop({ required: false })
+  lastLoginAt?: Date;
 
   createdAt: Date;
   updatedAt: Date;
