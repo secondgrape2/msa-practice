@@ -4,48 +4,70 @@ import {
   Post,
   Body,
   UseGuards,
-  Request,
+  Req,
+  Param,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { RolesGuard } from '@app/common/auth-core/guards/roles.guard';
 import { Roles } from '@app/common/auth-core/decorators/roles.decorator';
 import { ROLE } from '@app/common/auth-core/constants/role.constants';
 import { JwtAuthGuard } from '@app/common/auth-core/guards/jwt-auth.guard';
 import { RequestWithUser } from '@app/common/auth-core/interfaces/request.interface';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CreateGameEventDto } from '@app/common/dto/game-event.dto';
+import {
+  GameEventResponseDto,
+  GameEventWithRewardsResponseDto,
+} from '@app/common/dto/game-event-response.dto';
+import { GatewayService } from './gateway.service';
 
-@Controller('api/events')
+@ApiTags('Events')
+@Controller('api/events/v1')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class EventGatewayController {
-  constructor() {}
+  constructor(private readonly gatewayService: GatewayService) {}
 
   @Post()
   @Roles(ROLE.OPERATOR, ROLE.ADMIN)
+  @ApiOperation({ summary: 'Create a new game event' })
+  @ApiResponse({ status: HttpStatus.CREATED, type: GameEventResponseDto })
+  @HttpCode(HttpStatus.CREATED)
   async createEvent(
-    @Body() createEventDto: any,
-    @Request() req: RequestWithUser,
+    @Body() createEventDto: CreateGameEventDto,
+    @Req() req: RequestWithUser,
   ) {
-    // TODO: Forward the request to the event service
-    console.log(req.user);
-    return {
-      message: 'Event creation endpoint',
-      user: req.user,
-    };
+    return this.gatewayService.proxyToEventService<GameEventResponseDto>(
+      '/events/v1/admin',
+      'POST',
+      createEventDto,
+      req.headers.cookie,
+    );
   }
 
   @Get()
-  async findEvents(@Request() req: RequestWithUser) {
-    // TODO:Forward the request to the event service
-    return {
-      message: 'Get events endpoint',
-      user: req.user,
-    };
+  @ApiOperation({ summary: 'Get all game events' })
+  @ApiResponse({ status: HttpStatus.OK, type: [GameEventResponseDto] })
+  @HttpCode(HttpStatus.OK)
+  async findEvents(@Req() req: RequestWithUser) {
+    return this.gatewayService.proxyToEventService<GameEventResponseDto[]>(
+      '/events/v1',
+      'GET',
+      undefined,
+      req.headers.cookie,
+    );
   }
 
   @Get(':id')
-  async getEvent(@Request() req: RequestWithUser) {
-    // TODO: Forward the request to the event service
-    return {
-      message: 'Get single event endpoint',
-      user: req.user,
-    };
+  @ApiOperation({ summary: 'Get a specific game event with rewards' })
+  @ApiResponse({ status: HttpStatus.OK, type: GameEventWithRewardsResponseDto })
+  @HttpCode(HttpStatus.OK)
+  async getEvent(@Param('id') id: string, @Req() req: RequestWithUser) {
+    return this.gatewayService.proxyToEventService<GameEventWithRewardsResponseDto>(
+      `/events/v1/${id}`,
+      'GET',
+      undefined,
+      req.headers.cookie,
+    );
   }
 }

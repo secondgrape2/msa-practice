@@ -24,6 +24,7 @@
     "test:watch": "jest --watch",
     "test:integration:auth": "jest --config apps/auth/jest-integration.config.ts",
     "test:integration:event": "jest --config apps/event/jest-integration.config.ts",
+    "test:integration": "yarn test:integration:auth && yarn test:integration:event",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"

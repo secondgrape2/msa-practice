@@ -44,8 +44,8 @@ async function bootstrap() {
   );
   if (configService.get('NODE_ENV') === 'development') {
     const config = new DocumentBuilder()
-      .setTitle('Auth API')
-      .setDescription('This is an OpenAPI Specification for Auth.')
+      .setTitle('Event API')
+      .setDescription('This is an OpenAPI Specification for Event.')
       .setVersion('1.0')
       .addBearerAuth()
       .build();
