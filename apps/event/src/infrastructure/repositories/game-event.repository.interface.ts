@@ -34,7 +34,7 @@ export interface GameEventRepository {
    * Retrieves all currently active game events
    * An event is considered active if:
    * - isActive flag is true
-   * - current time is between startDate and endDate
+   * - current time is between startAt and endAt
    * @returns Promise resolving to an array of active game events
    */
   findActive(): Promise<GameEvent[]>;

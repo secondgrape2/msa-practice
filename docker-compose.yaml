@@ -57,9 +57,10 @@ services:
     env_file:
       - ./apps/event/.env
     environment:
-      - NODE_ENV=development
-      - DB_URL=mongodb://mongo_db:27017/event_db
-      - JWT_SECRET=YOUR_VERY_SECRET_KEY_EVENT
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${EVENT_PORT}
+      MONGODB_URI: ${EVENT_MONGODB_URI}
+      JWT_ACCESS_TOKEN_SECRET: ${JWT_ACCESS_TOKEN_SECRET}
     volumes:
       - ./apps/event/src:/usr/src/app/apps/event/src
       - ./libs:/usr/src/app/libs

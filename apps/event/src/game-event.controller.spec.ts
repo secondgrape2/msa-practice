@@ -1,10 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GameEventController } from './game-event.controller';
-import { GameEventService } from './game-event.service';
-import { RewardService } from './reward.service';
 import { JwtAuthGuard } from '@app/common/auth-core/guards/jwt-auth.guard';
 import { RolesGuard } from '@app/common/auth-core/guards/roles.guard';
 import { ROLE } from '@app/common/auth-core/constants/role.constants';
+import { GameEventService } from './application/interfaces/game-event.interface';
+import {
+  REWARD_SERVICE,
+  RewardService,
+} from './application/interfaces/reward.interface';
+import { GAME_EVENT_SERVICE } from './application/interfaces/game-event.interface';
+import { GameEventManagementService } from './application/game-event-management.service';
 
 describe('GameEventController', () => {
   let controller: GameEventController;
@@ -29,13 +34,14 @@ describe('GameEventController', () => {
       controllers: [GameEventController],
       providers: [
         {
-          provide: GameEventService,
+          provide: GAME_EVENT_SERVICE,
           useValue: mockGameEventService,
         },
         {
-          provide: RewardService,
+          provide: REWARD_SERVICE,
           useValue: mockRewardService,
         },
+        GameEventManagementService,
       ],
     }).compile();
 

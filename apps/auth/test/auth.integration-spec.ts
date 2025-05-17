@@ -8,6 +8,7 @@ import { getConnectionToken } from '@nestjs/mongoose';
 import { Response } from 'supertest';
 import { nanoid } from 'nanoid';
 import cookieParser from 'cookie-parser';
+import { ConfigService } from '@nestjs/config';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -21,8 +22,13 @@ describe('AuthController (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider('MONGODB_URI')
-      .useValue(uri)
+      .overrideProvider(ConfigService)
+      .useValue({
+        get: (key: string) => {
+          if (key === 'MONGODB_URI') return uri;
+          return process.env[key];
+        },
+      })
       .compile();
 
     app = moduleFixture.createNestApplication();

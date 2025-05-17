@@ -72,7 +72,7 @@ async function bootstrap() {
       ignoreGlobalPrefix: true,
     };
     const document = SwaggerModule.createDocument(app, config, options);
-    SwaggerModule.setup(`/auth/docs`, app, document, {
+    SwaggerModule.setup(`/event/docs`, app, document, {
       customCss: uiOptions.customCss,
       swaggerOptions: {
         ...uiOptions.swaggerOptions,

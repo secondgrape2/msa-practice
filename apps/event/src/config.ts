@@ -37,6 +37,10 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   @IsString()
   MONGODB_URI: string;
+
+  @IsNotEmpty()
+  @IsString()
+  JWT_ACCESS_TOKEN_SECRET: string;
 }
 
 export function validate(config: Record<string, unknown>) {

@@ -8,6 +8,8 @@ import {
   IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsDateString } from 'class-validator';
 
 export class ConditionParamDto {
   @IsOptional()
@@ -42,13 +44,41 @@ export class CompoundCondition {
 }
 
 export class CreateGameEventDto {
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Name of the game event',
+    example: 'Summer Festival Event',
+    required: true,
+  })
   @IsString()
+  @IsNotEmpty()
   name: string;
 
-  @IsOptional()
+  @ApiProperty({
+    description: 'Detailed description of the game event',
+    example: 'Join our summer festival with special rewards!',
+    required: true,
+  })
   @IsString()
-  description?: string;
+  @IsNotEmpty()
+  description: string;
+
+  @ApiProperty({
+    description: 'Start date and time of the event',
+    example: '2024-07-01T00:00:00Z',
+    required: true,
+  })
+  @IsDateString()
+  @IsNotEmpty()
+  startAt: Date;
+
+  @ApiProperty({
+    description: 'End date and time of the event',
+    example: '2024-07-31T23:59:59Z',
+    required: true,
+  })
+  @IsDateString()
+  @IsNotEmpty()
+  endAt: Date;
 
   @IsNotEmpty()
   @IsString()
@@ -60,16 +90,6 @@ export class CreateGameEventDto {
 
   @IsNotEmpty()
   conditionConfig: CompoundCondition;
-
-  @IsNotEmpty()
-  @Type(() => Date)
-  @IsDate()
-  startDate: Date;
-
-  @IsNotEmpty()
-  @Type(() => Date)
-  @IsDate()
-  endDate: Date;
 
   @IsNotEmpty()
   @IsBoolean()
