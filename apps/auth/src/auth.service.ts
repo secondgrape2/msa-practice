@@ -50,6 +50,9 @@ export class AuthServiceImpl implements AuthService {
     const { accessToken, refreshToken } =
       await this.generateTokens(validatedUser);
 
+    await this.userRepository.update(validatedUser.id, {
+      lastLoginAt: new Date(),
+    });
     return {
       accessToken,
       refreshToken,

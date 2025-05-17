@@ -8,6 +8,7 @@ const config = {
   moduleNameMapper: {
     'src/(.*)': '<rootDir>/src/$1',
     'test/(.*)': '<rootDir>/test/$1',
+    '^@app/common/(.*)$': '<rootDir>/libs/common/src/$1',
   },
   modulePaths: ['<rootDir>/src'],
   collectCoverageFrom: ['src/**/*.(t|j)s'],

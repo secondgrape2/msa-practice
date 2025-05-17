@@ -1,16 +1,17 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { User } from '../user.domain';
+import { User } from '../../interfaces/auth.interface';
 import { AuthActions } from './auth.actions';
-import * as bcrypt from 'bcrypt';
+import { ROLE } from '@app/common/auth-core/constants/role.constants';
 
 describe('AuthActions', () => {
   const mockUser: User = {
     id: '1',
     email: 'test@example.com',
     password: 'hashedPassword',
-    roles: ['user'],
+    roles: [ROLE.USER],
     createdAt: new Date(),
     updatedAt: new Date(),
+    lastLoginAt: new Date(),
   };
 
   describe('createAccessTokenPayload', () => {

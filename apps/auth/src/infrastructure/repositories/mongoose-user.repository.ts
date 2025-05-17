@@ -7,8 +7,7 @@ import {
   toUserDomain,
 } from '../../schemas/user.schema';
 import { UserRepository } from './user.repository.interface';
-import { User } from '../../domain/user.domain';
-import * as bcrypt from 'bcrypt';
+import { User } from '../../interfaces/auth.interface';
 
 @Injectable()
 export class MongooseUserRepository implements UserRepository {
