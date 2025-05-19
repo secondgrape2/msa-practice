@@ -19,7 +19,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GatewayService } from './gateway.service';
 
 @ApiTags('Events')
@@ -58,13 +58,21 @@ export class EventGatewayController {
     );
   }
 
-  @Get(':id')
+  @Get(':eventId')
   @ApiOperation({ summary: 'Get a specific game event with rewards' })
   @ApiResponse({ status: HttpStatus.OK, type: GameEventWithRewardsResponseDto })
+  @ApiParam({
+    name: 'eventId',
+    type: String,
+    description: 'The ID of the event',
+  })
   @HttpCode(HttpStatus.OK)
-  async getEvent(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+  async getEvent(
+    @Param('eventId') eventId: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.gatewayService.proxyToEventService<GameEventWithRewardsResponseDto>(
-      `/events/v1/${id}`,
+      `/events/v1/${eventId}`,
       'GET',
       undefined,
       req.headers.cookie,
