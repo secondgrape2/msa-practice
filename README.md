@@ -50,22 +50,10 @@ yarn test:integration
 docker compose -f docker-compose.yaml up -d --build
 ```
 
-## Docker Compose auth 서비스
+### DB 접속
 
 ```bash
-docker compose -f docker-compose.yaml up -d auth_service mongo_db
-```
-
-## Docker Compose gateway 서비스
-
-```bash
-docker compose -f docker-compose.yaml up -d gateway_service mongo_db
-```
-
-## Docker Compose event 서비스
-
-```bash
-docker compose -f docker-compose.yaml up -d event_service mongo_db
+url=mongodb://mongo1:27017,mongo2:27018,mongo3:27019/?replicaSet=rs0
 ```
 
 ### AUTH

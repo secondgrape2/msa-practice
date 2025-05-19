@@ -1,19 +1,54 @@
 version: '3.8'
 
 services:
-  mongo_db:
-    image: mongo:latest
-    container_name: mongo_db_container
+  mongo1:
+    container_name: mongo1
+    image: mongo:5.0.21
     ports:
-      - '27017:27017'
-    volumes:
-      - mongo_data:/data/db
+      - 27017:27017
+    restart: always
     networks:
-      - event_net
+      - mongoReplica
+    environment:
+      - ./docker/mongo.env
+    volumes:
+      - ./docker/local-mongodb.key:/key/mongodb.key
+      - ./docker/mongodb.conf:/etc/mongodb.conf
+    command: mongod --replSet rs0 --port 27017
+
+  mongo2:
+    container_name: mongo2
+    image: mongo:5.0.21
+    ports:
+      - 27018:27018
+    restart: always
+    networks:
+      - mongoReplica
+    environment:
+      - ./docker/mongo.env
+    volumes:
+      - ./docker/local-mongodb.key:/key/mongodb.key
+      - ./docker/mongodb.conf:/etc/mongodb.conf
+    command: mongod --replSet rs0 --port 27018
+
+  mongo3:
+    container_name: mongo3
+    image: mongo:5.0.21
+    ports:
+      - 27019:27019
+    restart: always
+    networks:
+      - mongoReplica
+    environment:
+      - ./docker/mongo.env
+    volumes:
+      - ./docker/local-mongodb.key:/key/mongodb.key
+      - ./docker/mongodb.conf:/etc/mongodb.conf
+    command: mongod --replSet rs0 --port 27019
 
 volumes:
   mongo_data:
 
 networks:
-  event_net:
+  mongoReplica:
     driver: bridge

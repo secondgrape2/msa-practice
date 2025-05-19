@@ -28,8 +28,6 @@ services:
       context: .
       dockerfile: apps/auth/Dockerfile
     container_name: auth_service_container
-    ports:
-      - '${PORT:-3001}:3001'
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: ${AUTH_PORT}
@@ -43,7 +41,9 @@ services:
       - ./apps/auth/src:/usr/src/app/apps/auth/src
       - ./libs:/usr/src/app/libs
     depends_on:
-      - mongo_db
+      - mongo1
+      - mongo2
+      - mongo3
     networks:
       - event_net
 
@@ -52,8 +52,6 @@ services:
       context: .
       dockerfile: apps/event/Dockerfile
     container_name: event_service_container
-    ports:
-      - '${EVENT_PORT:-3002}:3002'
     env_file:
       - ./apps/event/.env
     environment:
@@ -65,19 +63,75 @@ services:
       - ./apps/event/src:/usr/src/app/apps/event/src
       - ./libs:/usr/src/app/libs
     depends_on:
-      - mongo_db
+      - mongo1
+      - mongo2
+      - mongo3
     networks:
       - event_net
 
-  mongo_db:
-    image: mongo:latest
-    container_name: mongo_db_container
-    ports:
-      - '27017:27017'
+  mongo_init_replica:
+    image: node:18-alpine
+    container_name: mongo_init_replica
+    restart: 'no'
+    working_dir: /app
+    command: >
+      sh -c "
+      npm install mongodb &&
+      node init-replica.js
+      "
     volumes:
-      - mongo_data:/data/db
+      - ./docker/init-replica.js:/app/init-replica.js
     networks:
       - event_net
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+
+  mongo1:
+    container_name: mongo1
+    image: mongo:5.0.21
+    ports:
+      - 27017:27017
+    restart: always
+    networks:
+      - event_net
+    environment:
+      - ./docker/mongo.env
+    volumes:
+      - ./docker/local-mongodb.key:/key/mongodb.key
+      - ./docker/mongodb.conf:/etc/mongodb.conf
+    command: mongod --replSet rs0 --port 27017
+
+  mongo2:
+    container_name: mongo2
+    image: mongo:5.0.21
+    ports:
+      - 27018:27018
+    restart: always
+    networks:
+      - event_net
+    environment:
+      - ./docker/mongo.env
+    volumes:
+      - ./docker/local-mongodb.key:/key/mongodb.key
+      - ./docker/mongodb.conf:/etc/mongodb.conf
+    command: mongod --replSet rs0 --port 27018
+
+  mongo3:
+    container_name: mongo3
+    image: mongo:5.0.21
+    ports:
+      - 27019:27019
+    restart: always
+    networks:
+      - event_net
+    environment:
+      - ./docker/mongo.env
+    volumes:
+      - ./docker/local-mongodb.key:/key/mongodb.key
+      - ./docker/mongodb.conf:/etc/mongodb.conf
+    command: mongod --replSet rs0 --port 27019
 
 volumes:
   mongo_data:
