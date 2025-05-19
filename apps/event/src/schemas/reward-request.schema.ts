@@ -39,10 +39,10 @@ export class RewardRequestEntity {
   @Prop({ required: true })
   requestedAt: Date;
 
-  @Prop({ required: true })
+  @Prop()
   createdAt: Date;
 
-  @Prop({ required: true })
+  @Prop()
   updatedAt: Date;
 }
 

@@ -162,7 +162,7 @@ describe('GameEventController (Integration)', () => {
           operator: 'AND',
           rules: [
             {
-              type: 'LEVEL',
+              type: 'level',
               params: { minLevel: 5 },
             },
           ],
@@ -211,7 +211,7 @@ describe('GameEventController (Integration)', () => {
           operator: 'AND',
           rules: [
             {
-              type: 'LEVEL',
+              type: 'level',
               params: { minLevel: 10 },
             },
           ],
@@ -259,7 +259,7 @@ describe('GameEventController (Integration)', () => {
           operator: 'AND',
           rules: [
             {
-              type: 'LOGIN_STREAK',
+              type: 'login_streak',
               params: { minStreak: 7 },
             },
           ],
@@ -307,7 +307,7 @@ describe('GameEventController (Integration)', () => {
           operator: 'AND',
           rules: [
             {
-              type: 'LEVEL',
+              type: 'level',
               params: { minLevel: 5 },
             },
           ],
@@ -337,7 +337,7 @@ describe('GameEventController (Integration)', () => {
           operator: 'AND',
           rules: [
             {
-              type: 'LEVEL',
+              type: 'level',
               params: { minLevel: 5 },
             },
           ],
@@ -428,6 +428,225 @@ describe('GameEventController (Integration)', () => {
       await request(app.getHttpServer())
         .get(`/events/v1/${nonExistentId}`)
         .expect(422);
+    });
+  });
+
+  describe('GET /events/v1/rewards/my-history', () => {
+    let createdEventId: string;
+    let createdRewardId: string;
+
+    beforeEach(async () => {
+      // Create an event and reward for testing
+      const createEventDto: CreateGameEventDto = {
+        name: 'Test Event for History',
+        description: 'Test Description for History',
+        startAt: new Date('2024-01-01T00:00:00Z'),
+        endAt: new Date('2024-12-31T23:59:59Z'),
+        isActive: true,
+      };
+
+      const eventResponse = await request(app.getHttpServer())
+        .post('/events/v1/admin')
+        .set('Cookie', [`access_token=${adminToken}`])
+        .send(createEventDto);
+
+      createdEventId = eventResponse.body.id;
+
+      const createRewardDto: CreateRewardDto = {
+        type: REWARD_TYPE.POINT,
+        name: 'Test Reward',
+        description: 'Test Reward Description',
+        quantity: 1,
+        pointDetails: {
+          pointAmount: 1000,
+        },
+        conditionType: CONDITION_TYPE.LEVEL,
+        conditionConfig: {
+          operator: 'AND',
+          rules: [
+            {
+              type: 'level',
+              params: { minLevel: 1 },
+            },
+          ],
+        },
+        conditionsDescription: '레벨 1 이상',
+      };
+
+      const rewardResponse = await request(app.getHttpServer())
+        .post(`/events/v1/${createdEventId}/rewards`)
+        .set('Cookie', [`access_token=${adminToken}`])
+        .send(createRewardDto);
+
+      createdRewardId = rewardResponse.body.id;
+
+      // Create a reward request
+      const rewardRequestResponse = await request(app.getHttpServer())
+        .post('/events/v1/rewards/request')
+        .set('Cookie', [`access_token=${userToken}`])
+        .send({
+          eventId: createdEventId,
+          rewardId: createdRewardId,
+        })
+        .expect(201);
+    });
+
+    it("should return user's own reward request history", async () => {
+      const response = await request(app.getHttpServer())
+        .get('/events/v1/rewards/my-history')
+        .set('Cookie', [`access_token=${userToken}`])
+        .expect(200);
+
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(0);
+
+      const rewardRequest = response.body[0];
+      expect(rewardRequest).toHaveProperty('id');
+      expect(rewardRequest).toHaveProperty('userId', 'user-id');
+      expect(rewardRequest).toHaveProperty('eventId', createdEventId);
+      expect(rewardRequest).toHaveProperty('rewardId', createdRewardId);
+      expect(rewardRequest).toHaveProperty('status');
+      expect(rewardRequest).toHaveProperty('requestedAt');
+    });
+
+    it('should return 403 when accessed without proper role', async () => {
+      const auditorToken = jwt.sign(
+        {
+          sub: 'auditor-id',
+          email: 'auditor@example.com',
+          roles: [ROLE.AUDITOR],
+        },
+        'test-secret',
+        { expiresIn: 86400 },
+      );
+
+      await request(app.getHttpServer())
+        .get('/events/v1/rewards/my-history')
+        .set('Cookie', [`access_token=${auditorToken}`])
+        .expect(403);
+    });
+  });
+
+  describe('GET /events/v1/admin/rewards/request/history', () => {
+    let createdEventId: string;
+    let createdRewardId: string;
+
+    beforeEach(async () => {
+      // Create an event and reward for testing
+      const createEventDto: CreateGameEventDto = {
+        name: 'Test Event for Admin History',
+        description: 'Test Description for Admin History',
+        startAt: new Date('2024-01-01T00:00:00Z'),
+        endAt: new Date('2024-12-31T23:59:59Z'),
+        isActive: true,
+      };
+
+      const eventResponse = await request(app.getHttpServer())
+        .post('/events/v1/admin')
+        .set('Cookie', [`access_token=${adminToken}`])
+        .send(createEventDto);
+
+      createdEventId = eventResponse.body.id;
+
+      const createRewardDto: CreateRewardDto = {
+        type: REWARD_TYPE.POINT,
+        name: 'Test Reward',
+        description: 'Test Reward Description',
+        quantity: 1,
+        pointDetails: {
+          pointAmount: 1000,
+        },
+        conditionType: CONDITION_TYPE.LEVEL,
+        conditionConfig: {
+          operator: 'AND',
+          rules: [
+            {
+              type: 'level',
+              params: { minLevel: 1 },
+            },
+          ],
+        },
+        conditionsDescription: '레벨 1 이상',
+      };
+
+      const rewardResponse = await request(app.getHttpServer())
+        .post(`/events/v1/${createdEventId}/rewards`)
+        .set('Cookie', [`access_token=${adminToken}`])
+        .send(createRewardDto);
+
+      createdRewardId = rewardResponse.body.id;
+
+      // Create reward requests from multiple users
+      await request(app.getHttpServer())
+        .post('/events/v1/rewards/request')
+        .set('Cookie', [`access_token=${userToken}`])
+        .send({
+          eventId: createdEventId,
+          rewardId: createdRewardId,
+        });
+
+      const anotherUserToken = jwt.sign(
+        {
+          sub: 'another-user-id',
+          email: 'another@example.com',
+          roles: [ROLE.USER],
+        },
+        'test-secret',
+        { expiresIn: 86400 },
+      );
+
+      await request(app.getHttpServer())
+        .post('/events/v1/rewards/request')
+        .set('Cookie', [`access_token=${anotherUserToken}`])
+        .send({
+          eventId: createdEventId,
+          rewardId: createdRewardId,
+        });
+    });
+
+    it('should return all reward request history for admin', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/events/v1/admin/rewards/request/history')
+        .set('Cookie', [`access_token=${adminToken}`])
+        .expect(200);
+
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(1);
+
+      const rewardRequest = response.body[0];
+      expect(rewardRequest).toHaveProperty('id');
+      expect(rewardRequest).toHaveProperty('userId');
+      expect(rewardRequest).toHaveProperty('eventId', createdEventId);
+      expect(rewardRequest).toHaveProperty('rewardId', createdRewardId);
+      expect(rewardRequest).toHaveProperty('status');
+      expect(rewardRequest).toHaveProperty('requestedAt');
+    });
+
+    it('should return all reward request history for auditor', async () => {
+      const auditorToken = jwt.sign(
+        {
+          sub: 'auditor-id',
+          email: 'auditor@example.com',
+          roles: [ROLE.AUDITOR],
+        },
+        'test-secret',
+        { expiresIn: 86400 },
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/events/v1/admin/rewards/request/history')
+        .set('Cookie', [`access_token=${auditorToken}`])
+        .expect(200);
+
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(1);
+    });
+
+    it('should return 403 when accessed by regular user', async () => {
+      await request(app.getHttpServer())
+        .get('/events/v1/admin/rewards/request/history')
+        .set('Cookie', [`access_token=${userToken}`])
+        .expect(403);
     });
   });
 });

@@ -20,6 +20,7 @@ export interface RewardRequestRepository {
   findByUserId(userId: string): Promise<RewardRequest[]>;
   findByEventId(eventId: string): Promise<RewardRequest[]>;
   findById(id: string): Promise<RewardRequest | null>;
+  findAll(): Promise<RewardRequest[]>;
   update(id: string, data: Partial<RewardRequest>): Promise<RewardRequest>;
 }
 

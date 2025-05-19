@@ -100,12 +100,26 @@ export class GameEventController {
     });
   }
 
+  @Get('rewards/my-history')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLE.USER, ROLE.ADMIN)
+  async getMyRewardHistory(
+    @ReqUser() user: AuthenticatedUser,
+  ): Promise<RewardRequestResponseDto[]> {
+    const rewardRequests =
+      await this.gameEventManagementService.findRewardRequestsByUserId(user.id);
+    return plainToInstance(RewardRequestResponseDto, rewardRequests, {
+      excludeExtraneousValues: true,
+    });
+  }
+
   @Get('admin/rewards/request/history')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE.AUDITOR, ROLE.ADMIN)
-  async getRewardHistory(): Promise<RewardResponseDto[]> {
-    const rewards = await this.rewardService.findAll();
-    return plainToInstance(RewardResponseDto, rewards, {
+  async getRewardHistory(): Promise<RewardRequestResponseDto[]> {
+    const requests =
+      await this.gameEventManagementService.findAllRewardRequests();
+    return plainToInstance(RewardRequestResponseDto, requests, {
       excludeExtraneousValues: true,
     });
   }

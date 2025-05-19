@@ -81,7 +81,6 @@ export class GameEventManagementService {
     eventId: string,
     rewardId: string,
   ): Promise<RewardRequest> {
-    // Check if event exists
     const event = await this.gameEventService.findOne(eventId);
     if (!event) {
       throw new HttpException(
@@ -93,7 +92,10 @@ export class GameEventManagementService {
     // Check if reward exists and belongs to the event
     const reward = await this.rewardService.findById(rewardId);
     if (!reward) {
-      throw new HttpException('보상을 찾을 수 없습니다', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        '보상을 찾을 수 없습니다',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
     if (reward.eventId !== eventId) {
       throw new HttpException(
@@ -103,7 +105,9 @@ export class GameEventManagementService {
     }
 
     // Check if user meets reward conditions
+    // TODO: implement user state service
     const userState = await this.userStateService.getUserState(userId);
+
     const meetsConditions = ConditionChecker.checkCondition(
       reward.conditionConfig,
       userState,
@@ -183,5 +187,9 @@ export class GameEventManagementService {
 
   async findRewardRequestsByEventId(eventId: string): Promise<RewardRequest[]> {
     return this.rewardRequestService.findByEventId(eventId);
+  }
+
+  async findAllRewardRequests(): Promise<RewardRequest[]> {
+    return this.rewardRequestService.findAll();
   }
 }

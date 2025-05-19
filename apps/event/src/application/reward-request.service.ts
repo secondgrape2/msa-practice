@@ -47,6 +47,10 @@ export class RewardRequestServiceImpl implements RewardRequestService {
     return request;
   }
 
+  async findAll(): Promise<RewardRequest[]> {
+    return this.rewardRequestRepository.findAll();
+  }
+
   async updateStatus(
     id: string,
     status: (typeof REWARD_REQUEST_STATUS)[keyof typeof REWARD_REQUEST_STATUS],
