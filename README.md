@@ -41,9 +41,7 @@ yarn start:dev:event
 yarn test
 
 # 통합 테스트
-yarn test:integration:auth
-yarn test:integration:gateway
-yarn test:integration:event
+yarn test:integration
 ```
 
 ## Docker Compose
@@ -123,13 +121,13 @@ docker compose -f docker-compose.yaml up -d event_service mongo_db
 // 통과 (사용자 레벨 15 >= 필요 레벨 10)
 {
   operator: 'AND',
-  rules: [{ type: 'USER_LEVEL', params: { minLevel: 10 } }]
+  rules: [{ type: 'level', params: { minLevel: 10 } }]
 }
 
 // 실패 (사용자 레벨 15 < 필요 레벨 20)
 {
   operator: 'AND',
-  rules: [{ type: 'USER_LEVEL', params: { minLevel: 20 } }]
+  rules: [{ type: 'level', params: { minLevel: 20 } }]
 }
 ```
 
@@ -139,13 +137,13 @@ docker compose -f docker-compose.yaml up -d event_service mongo_db
 // 통과 (사용자 스트릭 10 >= 필요 일수 7)
 {
   operator: 'AND',
-  rules: [{ type: 'LOGIN_STREAK', params: { days: 7 } }]
+  rules: [{ type: 'login_streak', params: { days: 7 } }]
 }
 
 // 실패 (사용자 스트릭 10 < 필요 일수 15)
 {
   operator: 'AND',
-  rules: [{ type: 'LOGIN_STREAK', params: { days: 15 } }]
+  rules: [{ type: 'login_streak', params: { days: 15 } }]
 }
 ```
 
@@ -156,8 +154,8 @@ docker compose -f docker-compose.yaml up -d event_service mongo_db
 {
   operator: 'AND',
   rules: [
-    { type: 'USER_LEVEL', params: { minLevel: 10 } },
-    { type: 'LOGIN_STREAK', params: { days: 7 } }
+    { type: 'level', params: { minLevel: 10 } },
+    { type: 'login_streak', params: { days: 7 } }
   ]
 }
 
@@ -165,15 +163,8 @@ docker compose -f docker-compose.yaml up -d event_service mongo_db
 {
   operator: 'OR',
   rules: [
-    { type: 'USER_LEVEL', params: { minLevel: 20 } },
-    { type: 'LOGIN_STREAK', params: { days: 7 } }
+    { type: 'level', params: { minLevel: 20 } },
+    { type: 'login_streak', params: { days: 7 } }
   ]
 }
-```
-
-테스트 실행 방법:
-
-```bash
-cd apps/event
-npm test
 ```
