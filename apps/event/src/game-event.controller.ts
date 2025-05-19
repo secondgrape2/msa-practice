@@ -22,6 +22,7 @@ import {
   Inject,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -34,6 +35,8 @@ import {
   REWARD_SERVICE,
   RewardService,
 } from './application/interfaces/reward.interface';
+import { PaginationDto } from '@app/common/dto/pagination.dto';
+import { PaginatedResponse } from '@app/common/interfaces/pagination.interface';
 
 @Controller('events/v1')
 export class GameEventController {
@@ -74,11 +77,25 @@ export class GameEventController {
   }
 
   @Get()
-  async findAll(): Promise<GameEventResponseDto[]> {
-    const events = await this.gameEventService.findActive();
-    return plainToInstance(GameEventResponseDto, events, {
-      excludeExtraneousValues: true,
-    });
+  async findAll(
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginatedResponse<GameEventResponseDto>> {
+    const { page = 1, limit = 10 } = paginationDto;
+    const { items, total } =
+      await this.gameEventService.findActiveWithPagination({
+        page,
+        limit,
+      });
+
+    return {
+      items: plainToInstance(GameEventResponseDto, items, {
+        excludeExtraneousValues: true,
+      }),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   @Get(':eventId')
@@ -97,23 +114,51 @@ export class GameEventController {
   @Roles(ROLE.USER, ROLE.ADMIN)
   async getMyRewardHistory(
     @ReqUser() user: AuthenticatedUser,
-  ): Promise<RewardRequestResponseDto[]> {
-    const rewardRequests =
-      await this.gameEventManagementService.findRewardRequestsByUserId(user.id);
-    return plainToInstance(RewardRequestResponseDto, rewardRequests, {
-      excludeExtraneousValues: true,
-    });
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginatedResponse<RewardRequestResponseDto>> {
+    const { page = 1, limit = 10 } = paginationDto;
+    const { items, total } =
+      await this.gameEventManagementService.findRewardRequestsByUserId(
+        user.id,
+        {
+          page,
+          limit,
+        },
+      );
+
+    return {
+      items: plainToInstance(RewardRequestResponseDto, items, {
+        excludeExtraneousValues: true,
+      }),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   @Get('admin/rewards/request/history')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE.AUDITOR, ROLE.ADMIN)
-  async getRewardHistory(): Promise<RewardRequestResponseDto[]> {
-    const requests =
-      await this.gameEventManagementService.findAllRewardRequests();
-    return plainToInstance(RewardRequestResponseDto, requests, {
-      excludeExtraneousValues: true,
-    });
+  async getRewardHistory(
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginatedResponse<RewardRequestResponseDto>> {
+    const { page = 1, limit = 10 } = paginationDto;
+    const { items, total } =
+      await this.gameEventManagementService.findAllRewardRequests({
+        page,
+        limit,
+      });
+
+    return {
+      items: plainToInstance(RewardRequestResponseDto, items, {
+        excludeExtraneousValues: true,
+      }),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   @Post('rewards/request')

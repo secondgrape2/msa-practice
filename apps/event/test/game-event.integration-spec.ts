@@ -371,9 +371,9 @@ describe('GameEventController (Integration)', () => {
         .get('/events/v1')
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBe(1);
-      const event = response.body[0];
+      expect(Array.isArray(response.body.items)).toBe(true);
+      expect(response.body.items.length).toBe(1);
+      const event = response.body.items[0];
       expect(event).toHaveProperty('id');
       expect(event.name).toBe('Test Event 1');
       expect(event.description).toBe('Test Description 1');
@@ -494,10 +494,10 @@ describe('GameEventController (Integration)', () => {
         .set('Cookie', [`access_token=${userToken}`])
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(0);
+      expect(Array.isArray(response.body.items)).toBe(true);
+      expect(response.body.items.length).toBeGreaterThan(0);
 
-      const rewardRequest = response.body[0];
+      const rewardRequest = response.body.items[0];
       expect(rewardRequest).toHaveProperty('id');
       expect(rewardRequest).toHaveProperty('userId', 'user-id');
       expect(rewardRequest).toHaveProperty('eventId', createdEventId);
@@ -607,10 +607,10 @@ describe('GameEventController (Integration)', () => {
         .set('Cookie', [`access_token=${adminToken}`])
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(1);
+      expect(Array.isArray(response.body.items)).toBe(true);
+      expect(response.body.items.length).toBeGreaterThan(1);
 
-      const rewardRequest = response.body[0];
+      const rewardRequest = response.body.items[0];
       expect(rewardRequest).toHaveProperty('id');
       expect(rewardRequest).toHaveProperty('userId');
       expect(rewardRequest).toHaveProperty('eventId', createdEventId);
@@ -635,8 +635,8 @@ describe('GameEventController (Integration)', () => {
         .set('Cookie', [`access_token=${auditorToken}`])
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(1);
+      expect(Array.isArray(response.body.items)).toBe(true);
+      expect(response.body.items.length).toBeGreaterThan(1);
     });
 
     it('should return 403 when accessed by regular user', async () => {

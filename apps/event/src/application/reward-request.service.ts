@@ -6,6 +6,10 @@ import {
 } from '../domain/reward-request.domain';
 import { RewardRequestService } from './interfaces/reward-request.interface';
 import { REWARD_REQUEST_STATUS } from '../domain/reward.domain';
+import {
+  PaginationOptions,
+  PaginationResult,
+} from '@app/common/interfaces/pagination.interface';
 
 @Injectable()
 export class RewardRequestServiceImpl implements RewardRequestService {
@@ -32,6 +36,16 @@ export class RewardRequestServiceImpl implements RewardRequestService {
     return this.rewardRequestRepository.findByUserId(userId);
   }
 
+  async findByUserIdWithPagination(
+    userId: string,
+    options?: PaginationOptions,
+  ): Promise<PaginationResult<RewardRequest>> {
+    return this.rewardRequestRepository.findByUserIdWithPagination(
+      userId,
+      options,
+    );
+  }
+
   async findByEventId(eventId: string): Promise<RewardRequest[]> {
     return this.rewardRequestRepository.findByEventId(eventId);
   }
@@ -47,8 +61,10 @@ export class RewardRequestServiceImpl implements RewardRequestService {
     return request;
   }
 
-  async findAll(): Promise<RewardRequest[]> {
-    return this.rewardRequestRepository.findAll();
+  async findAll(
+    options?: PaginationOptions,
+  ): Promise<PaginationResult<RewardRequest>> {
+    return this.rewardRequestRepository.findAll(options);
   }
 
   async updateStatus(

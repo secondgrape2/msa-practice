@@ -20,11 +20,13 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GatewayService } from './gateway.service';
+import { PaginationDto } from '@app/common/dto/pagination.dto';
 
 @ApiTags('Events')
 @Controller('api/events/v1')
@@ -76,12 +78,19 @@ export class EventGatewayController {
   @ApiOperation({ summary: 'Get all active game events' })
   @ApiResponse({ status: HttpStatus.OK, type: [GameEventResponseDto] })
   @HttpCode(HttpStatus.OK)
-  async findEvents(@Req() req: AuthenticatedRequest) {
+  async findEvents(
+    @Req() req: AuthenticatedRequest,
+    @Query() paginationDto: PaginationDto,
+  ) {
     return this.gatewayService.proxyToEventService<GameEventResponseDto[]>(
       '/events/v1',
       'GET',
       undefined,
       req.headers.cookie,
+      {
+        page: paginationDto.page?.toString(),
+        limit: paginationDto.limit?.toString(),
+      },
     );
   }
 
@@ -90,12 +99,19 @@ export class EventGatewayController {
   @ApiOperation({ summary: "Get user's own reward request history" })
   @ApiResponse({ status: HttpStatus.OK, type: [RewardRequestResponseDto] })
   @HttpCode(HttpStatus.OK)
-  async getMyRewardHistory(@Req() req: AuthenticatedRequest) {
+  async getMyRewardHistory(
+    @Req() req: AuthenticatedRequest,
+    @Query() paginationDto: PaginationDto,
+  ) {
     return this.gatewayService.proxyToEventService<RewardRequestResponseDto[]>(
       '/events/v1/rewards/my-history',
       'GET',
       undefined,
       req.headers.cookie,
+      {
+        page: paginationDto.page?.toString(),
+        limit: paginationDto.limit?.toString(),
+      },
     );
   }
 
@@ -104,12 +120,19 @@ export class EventGatewayController {
   @ApiOperation({ summary: 'Get all reward request history (Admin only)' })
   @ApiResponse({ status: HttpStatus.OK, type: [RewardRequestResponseDto] })
   @HttpCode(HttpStatus.OK)
-  async getRewardHistory(@Req() req: AuthenticatedRequest) {
+  async getRewardHistory(
+    @Req() req: AuthenticatedRequest,
+    @Query() paginationDto: PaginationDto,
+  ) {
     return this.gatewayService.proxyToEventService<RewardRequestResponseDto[]>(
       '/events/v1/admin/rewards/request/history',
       'GET',
       undefined,
       req.headers.cookie,
+      {
+        page: paginationDto.page?.toString(),
+        limit: paginationDto.limit?.toString(),
+      },
     );
   }
 
