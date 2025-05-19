@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { CreateRewardDto } from '@app/common/dto/reward.dto';
+import { CreateRewardDto } from '@app/common/event/dto/reward.dto';
 import { Reward } from './domain/reward.domain';
 import {
   RewardRepository,

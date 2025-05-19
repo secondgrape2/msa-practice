@@ -1,4 +1,4 @@
-import { CreateGameEventDto } from '@app/common/dto/game-event.dto';
+import { CreateGameEventDto } from '@app/common/event/dto/game-event.dto';
 import { INestApplication } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';

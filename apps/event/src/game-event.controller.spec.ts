@@ -10,12 +10,16 @@ import {
 } from './application/interfaces/reward.interface';
 import { GAME_EVENT_SERVICE } from './application/interfaces/game-event.interface';
 import { GameEventManagementService } from './application/game-event-management.service';
+import {
+  REWARD_REQUEST_SERVICE,
+  RewardRequestService,
+} from './application/interfaces/reward-request.interface';
 
 describe('GameEventController', () => {
   let controller: GameEventController;
   let mockGameEventService: jest.Mocked<GameEventService>;
   let mockRewardService: jest.Mocked<RewardService>;
-
+  let mockRewardRequestService: jest.Mocked<RewardRequestService>;
   beforeEach(async () => {
     mockGameEventService = {
       create: jest.fn(),
@@ -30,6 +34,12 @@ describe('GameEventController', () => {
       findByEventId: jest.fn(),
     } as any;
 
+    mockRewardRequestService = {
+      createRequest: jest.fn(),
+      findByUserId: jest.fn(),
+      findByEventId: jest.fn(),
+    } as any;
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [GameEventController],
       providers: [
@@ -40,6 +50,10 @@ describe('GameEventController', () => {
         {
           provide: REWARD_SERVICE,
           useValue: mockRewardService,
+        },
+        {
+          provide: REWARD_REQUEST_SERVICE,
+          useValue: mockRewardRequestService,
         },
         GameEventManagementService,
       ],

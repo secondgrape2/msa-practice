@@ -1,5 +1,5 @@
 import { GameEvent } from '../../domain/game-event.domain';
-import { CreateGameEventDto } from '@app/common/dto/game-event.dto';
+import { CreateGameEventDto } from '@app/common/event/dto/game-event.dto';
 
 /**
  * @description Service interface for managing game events.

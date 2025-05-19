@@ -4,7 +4,7 @@ import { Reward, RewardDetails } from '../domain/reward.domain';
 import {
   REWARD_TYPE,
   RewardType,
-} from '@app/common/constants/reward.constants';
+} from '@app/common/event/interfaces/reward.interface';
 
 export type RewardDocument = RewardEntity & Document;
 

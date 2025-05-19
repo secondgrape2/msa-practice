@@ -13,14 +13,16 @@ import { RolesGuard } from '@app/common/auth-core/guards/roles.guard';
 import { Roles } from '@app/common/auth-core/decorators/roles.decorator';
 import { ROLE } from '@app/common/auth-core/constants/role.constants';
 import { JwtAuthGuard } from '@app/common/auth-core/guards/jwt-auth.guard';
-import { RequestWithUser } from '@app/common/auth-core/interfaces/request.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CreateGameEventDto } from '@app/common/dto/game-event.dto';
+import { CreateGameEventDto } from '@app/common/event/dto/game-event.dto';
 import {
   GameEventResponseDto,
   GameEventWithRewardsResponseDto,
-} from '@app/common/dto/game-event-response.dto';
+} from '@app/common/event/dto/game-event-response.dto';
 import { GatewayService } from './gateway.service';
+import { AuthenticatedUser } from '@app/common/auth-core/interfaces/user.interface';
+import { ReqUser } from '@app/common/auth-core/decorators/req-user.decorator';
+import { AuthenticatedRequest } from '@app/common/auth-core/interfaces/user.interface';
 
 @ApiTags('Events')
 @Controller('api/events/v1')
@@ -35,7 +37,7 @@ export class EventGatewayController {
   @HttpCode(HttpStatus.CREATED)
   async createEvent(
     @Body() createEventDto: CreateGameEventDto,
-    @Req() req: RequestWithUser,
+    @ReqUser() user: AuthenticatedUser,
   ) {
     return this.gatewayService.proxyToEventService<GameEventResponseDto>(
       '/events/v1/admin',
@@ -49,7 +51,7 @@ export class EventGatewayController {
   @ApiOperation({ summary: 'Get all game events' })
   @ApiResponse({ status: HttpStatus.OK, type: [GameEventResponseDto] })
   @HttpCode(HttpStatus.OK)
-  async findEvents(@Req() req: RequestWithUser) {
+  async findEvents(@Req() req: AuthenticatedRequest) {
     return this.gatewayService.proxyToEventService<GameEventResponseDto[]>(
       '/events/v1',
       'GET',
@@ -62,7 +64,7 @@ export class EventGatewayController {
   @ApiOperation({ summary: 'Get a specific game event with rewards' })
   @ApiResponse({ status: HttpStatus.OK, type: GameEventWithRewardsResponseDto })
   @HttpCode(HttpStatus.OK)
-  async getEvent(@Param('id') id: string, @Req() req: RequestWithUser) {
+  async getEvent(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.gatewayService.proxyToEventService<GameEventWithRewardsResponseDto>(
       `/events/v1/${id}`,
       'GET',

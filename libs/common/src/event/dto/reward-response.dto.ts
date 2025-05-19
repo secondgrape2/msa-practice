@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { REWARD_TYPE, RewardType } from '../constants/reward.constants';
+import {
+  REWARD_TYPE,
+  RewardType,
+} from '@app/common/event/interfaces/reward.interface';
 
 export class RewardResponseDto {
   @Expose()

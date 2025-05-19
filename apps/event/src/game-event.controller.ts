@@ -1,14 +1,20 @@
 import { ROLE } from '@app/common/auth-core/constants/role.constants';
 import { Roles } from '@app/common/auth-core/decorators/roles.decorator';
+import { ReqUser } from '@app/common/auth-core/decorators/req-user.decorator';
 import { JwtAuthGuard } from '@app/common/auth-core/guards/jwt-auth.guard';
 import { RolesGuard } from '@app/common/auth-core/guards/roles.guard';
+import { AuthenticatedUser } from '@app/common/auth-core/interfaces/user.interface';
 import {
   GameEventResponseDto,
   GameEventWithRewardsResponseDto,
-} from '@app/common/dto/game-event-response.dto';
-import { CreateGameEventDto } from '@app/common/dto/game-event.dto';
-import { RewardResponseDto } from '@app/common/dto/reward-response.dto';
-import { CreateRewardDto } from '@app/common/dto/reward.dto';
+} from '@app/common/event/dto/game-event-response.dto';
+import { CreateGameEventDto } from '@app/common/event/dto/game-event.dto';
+import { RewardResponseDto } from '@app/common/event/dto/reward-response.dto';
+import { CreateRewardDto } from '@app/common/event/dto/reward.dto';
+import {
+  CreateRewardRequestDto,
+  RewardRequestResponseDto,
+} from '@app/common/event/dto/reward-request.dto';
 import {
   Body,
   Controller,
@@ -51,7 +57,7 @@ export class GameEventController {
     });
   }
 
-  @Post('admin/:eventId/rewards')
+  @Post(':eventId/rewards')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE.OPERATOR, ROLE.ADMIN)
   async addReward(
@@ -75,12 +81,12 @@ export class GameEventController {
     });
   }
 
-  @Get(':id')
+  @Get(':eventId')
   async findOne(
-    @Param('id') id: string,
+    @Param('eventId') eventId: string,
   ): Promise<GameEventWithRewardsResponseDto> {
     const eventWithRewards =
-      await this.gameEventManagementService.getEventWithRewards(id);
+      await this.gameEventManagementService.getEventWithRewards(eventId);
     return plainToInstance(GameEventWithRewardsResponseDto, eventWithRewards, {
       excludeExtraneousValues: true,
     });
@@ -100,6 +106,22 @@ export class GameEventController {
   async getRewardHistory(): Promise<RewardResponseDto[]> {
     const rewards = await this.rewardService.findAll();
     return plainToInstance(RewardResponseDto, rewards, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @Post('rewards/request')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLE.USER, ROLE.ADMIN)
+  async requestReward(
+    @ReqUser() user: AuthenticatedUser,
+    @Body() createRewardRequestDto: CreateRewardRequestDto,
+  ): Promise<RewardRequestResponseDto> {
+    const request = await this.gameEventManagementService.createRewardRequest(
+      user.id,
+      createRewardRequestDto.eventId,
+    );
+    return plainToInstance(RewardRequestResponseDto, request, {
       excludeExtraneousValues: true,
     });
   }

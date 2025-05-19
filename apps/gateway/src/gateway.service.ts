@@ -1,5 +1,5 @@
 import { SignInDto, SignUpDto } from '@app/common/auth-core/dtos';
-import { CreateGameEventDto } from '@app/common/dto/game-event.dto';
+import { CreateGameEventDto } from '@app/common/event/dto/game-event.dto';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
