@@ -8,7 +8,10 @@ import {
   GameEventWithRewardsResponseDto,
 } from '@app/common/event/dto/game-event-response.dto';
 import { CreateGameEventDto } from '@app/common/event/dto/game-event.dto';
+import { RewardResponseDto } from '@app/common/event/dto/reward-response.dto';
+import { CreateRewardDto } from '@app/common/event/dto/reward.dto';
 import { RewardRequestResponseDto } from '@app/common/event/dto/reward-request.dto';
+import { CreateRewardRequestDto } from '@app/common/event/dto/reward-request.dto';
 import {
   Body,
   Controller,
@@ -46,8 +49,31 @@ export class EventGatewayController {
     );
   }
 
+  @Post(':eventId/rewards')
+  @Roles(ROLE.OPERATOR, ROLE.ADMIN)
+  @ApiOperation({ summary: 'Add a reward to an event' })
+  @ApiResponse({ status: HttpStatus.CREATED, type: RewardResponseDto })
+  @ApiParam({
+    name: 'eventId',
+    type: String,
+    description: 'The ID of the event',
+  })
+  @HttpCode(HttpStatus.CREATED)
+  async addReward(
+    @Param('eventId') eventId: string,
+    @Body() createRewardDto: CreateRewardDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.gatewayService.proxyToEventService<RewardResponseDto>(
+      `/events/v1/${eventId}/rewards`,
+      'POST',
+      createRewardDto,
+      req.headers.cookie,
+    );
+  }
+
   @Get()
-  @ApiOperation({ summary: 'Get all game events' })
+  @ApiOperation({ summary: 'Get all active game events' })
   @ApiResponse({ status: HttpStatus.OK, type: [GameEventResponseDto] })
   @HttpCode(HttpStatus.OK)
   async findEvents(@Req() req: AuthenticatedRequest) {
@@ -104,6 +130,23 @@ export class EventGatewayController {
       `/events/v1/${eventId}`,
       'GET',
       undefined,
+      req.headers.cookie,
+    );
+  }
+
+  @Post('rewards/request')
+  @Roles(ROLE.USER, ROLE.ADMIN)
+  @ApiOperation({ summary: 'Request a reward for an event' })
+  @ApiResponse({ status: HttpStatus.CREATED, type: RewardRequestResponseDto })
+  @HttpCode(HttpStatus.CREATED)
+  async requestReward(
+    @Body() createRewardRequestDto: CreateRewardRequestDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.gatewayService.proxyToEventService<RewardRequestResponseDto>(
+      '/events/v1/rewards/request',
+      'POST',
+      createRewardRequestDto,
       req.headers.cookie,
     );
   }

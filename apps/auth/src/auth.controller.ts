@@ -23,7 +23,7 @@ import {
   createAuthResponse,
   createAuthLoginResponse,
 } from '@app/common/auth-core/dtos/auth.response.dto';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from '@app/common/auth-core/guards/jwt-auth.guard';
 
@@ -70,28 +70,24 @@ export class AuthController {
     });
   }
 
-  // @Post('refresh')
-  // @HttpCode(HttpStatus.OK)
-  // @UseInterceptors(AuthCookieInterceptor)
-  // @ApiOperation({ summary: 'Refresh access token' })
-  // @ApiResponse({ status: HttpStatus.OK, type: AuthLoginResponse })
-  // async refresh(@Req() req: Request) {
-  //   const cookies = req;
-  //   console.log(`cookies: ${JSON.stringify(cookies)}`);
-  //   const refresh_token = cookies[COOKIE_NAMES.refreshToken];
-  //   if (!refresh_token) {
-  //     throw new UnauthorizedException('Refresh token not found');
-  //   }
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(AuthCookieInterceptor)
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiResponse({ status: HttpStatus.OK, type: AuthLoginResponse })
+  async refresh(@Req() req: Request) {
+    const refresh_token = req.cookies?.[COOKIE_NAMES.refreshToken];
+    if (!refresh_token) {
+      throw new UnauthorizedException('Refresh token not found');
+    }
 
-  //   console.log(`refresh_token: ${refresh_token}`);
-
-  //   const { access_token, user } =
-  //     await this.authService.refreshToken(refresh_token);
-  //   return createAuthLoginResponse(user, {
-  //     jwt: access_token,
-  //     jwtRefresh: refresh_token,
-  //   });
-  // }
+    const { accessToken, user } =
+      await this.authService.refreshToken(refresh_token);
+    return createAuthLoginResponse(user, {
+      jwt: accessToken,
+      jwtRefresh: refresh_token,
+    });
+  }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
