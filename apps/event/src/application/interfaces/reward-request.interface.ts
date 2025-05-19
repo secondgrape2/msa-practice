@@ -1,5 +1,5 @@
 import { RewardRequest } from '../../domain/reward-request.domain';
-import { REWARD_REQUEST_STATUS } from '@app/common/event/interfaces/reward.interface';
+import { REWARD_REQUEST_STATUS } from '../../domain/reward.domain';
 
 export const REWARD_REQUEST_SERVICE = 'REWARD_REQUEST_SERVICE';
 

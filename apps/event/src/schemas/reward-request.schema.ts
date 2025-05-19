@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { RewardRequest } from '../domain/reward-request.domain';
+import { Index } from '@typegoose/typegoose';
 import {
   REWARD_REQUEST_STATUS,
   RewardRequestStatus,
-} from '@app/common/event/interfaces/reward.interface';
-import { Index } from '@typegoose/typegoose';
+} from '../domain/reward.domain';
 
 const REWARD_REQUEST_COLLECTION_NAME = 'reward_requests';
 @Schema({ timestamps: true, collection: REWARD_REQUEST_COLLECTION_NAME })

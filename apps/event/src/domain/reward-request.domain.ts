@@ -1,4 +1,4 @@
-import { RewardRequestStatus } from '@app/common/event/interfaces/reward.interface';
+import { RewardRequestStatus } from './reward.domain';
 
 export interface RewardRequest {
   id: string;

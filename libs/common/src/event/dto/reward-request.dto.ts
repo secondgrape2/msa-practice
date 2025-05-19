@@ -1,9 +1,5 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  REWARD_REQUEST_STATUS,
-  RewardRequestStatus,
-} from '@app/common/event/interfaces/reward.interface';
 
 export class CreateRewardRequestDto {
   @ApiProperty({
@@ -51,10 +47,10 @@ export class RewardRequestResponseDto {
 
   @ApiProperty({
     description: 'Status of the reward request',
-    enum: REWARD_REQUEST_STATUS,
-    example: REWARD_REQUEST_STATUS.PENDING,
+    enum: ['pending', 'success', 'failed', 'claimed'],
+    example: 'pending',
   })
-  status: RewardRequestStatus;
+  status: 'pending' | 'success' | 'failed' | 'claimed';
 
   @ApiProperty({
     description: 'When the reward was requested',

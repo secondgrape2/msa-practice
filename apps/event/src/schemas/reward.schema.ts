@@ -1,10 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Reward, RewardDetails } from '../domain/reward.domain';
 import {
+  CONDITION_TYPE,
+  ConditionType,
+  CouponRewardDetails,
+  ItemRewardDetails,
+  PointRewardDetails,
+  Reward,
   REWARD_TYPE,
   RewardType,
-} from '@app/common/event/interfaces/reward.interface';
+} from '../domain/reward.domain';
+import { ConditionConfig } from '../domain/game-event.domain';
 
 export type RewardDocument = RewardEntity & Document;
 
@@ -38,7 +44,22 @@ export class RewardEntity {
   quantity: number;
 
   @Prop({ type: Object })
-  details?: RewardDetails;
+  pointDetails?: PointRewardDetails;
+
+  @Prop({ type: Object })
+  itemDetails?: ItemRewardDetails;
+
+  @Prop({ type: Object })
+  couponDetails?: CouponRewardDetails;
+
+  @Prop({ type: String, required: true, enum: Object.values(CONDITION_TYPE) })
+  conditionType: ConditionType;
+
+  @Prop({ type: Object, required: true, default: {} })
+  conditionConfig: ConditionConfig;
+
+  @Prop({ required: true, trim: true })
+  conditionsDescription: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -53,7 +74,12 @@ export const toRewardDomain = (doc: RewardDocument): Reward => ({
   name: doc.name,
   description: doc.description,
   quantity: doc.quantity,
-  details: doc.details,
+  pointDetails: doc.pointDetails,
+  itemDetails: doc.itemDetails,
+  couponDetails: doc.couponDetails,
+  conditionConfig: doc.conditionConfig,
+  conditionsDescription: doc.conditionsDescription,
+  conditionType: doc.conditionType,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
 });

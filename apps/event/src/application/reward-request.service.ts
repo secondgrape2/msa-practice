@@ -1,4 +1,3 @@
-import { REWARD_REQUEST_STATUS } from '@app/common/event/interfaces/reward.interface';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import {
   REWARD_REQUEST_REPOSITORY,
@@ -6,6 +5,7 @@ import {
   RewardRequestRepository,
 } from '../domain/reward-request.domain';
 import { RewardRequestService } from './interfaces/reward-request.interface';
+import { REWARD_REQUEST_STATUS } from '../domain/reward.domain';
 
 @Injectable()
 export class RewardRequestServiceImpl implements RewardRequestService {

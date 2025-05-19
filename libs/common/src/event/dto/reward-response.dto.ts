@@ -1,9 +1,13 @@
+import { Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
 import {
-  REWARD_TYPE,
-  RewardType,
-} from '@app/common/event/interfaces/reward.interface';
+  CouponRewardDetailsDto,
+  ItemRewardDetailsDto,
+  PointRewardDetailsDto,
+  RewardTypeDto,
+} from './reward.dto';
+import { ConditionTypeDto } from './reward.dto';
+import { ConditionConfigDto } from './condition.dto';
 
 export class RewardResponseDto {
   @Expose()
@@ -14,29 +18,86 @@ export class RewardResponseDto {
 
   @Expose()
   @ApiProperty({
-    description: 'ID of the game event this reward belongs to',
+    description: 'ID of the associated game event',
   })
   eventId: string;
 
   @Expose()
   @ApiProperty({
     description: 'Type of the reward',
-    enum: REWARD_TYPE,
+    type: RewardTypeDto,
   })
-  type: RewardType;
+  type: string;
 
   @Expose()
   @ApiProperty({
-    description: 'Amount or quantity of the reward',
-    example: 100,
-    minimum: 0,
+    description: 'Name of the reward',
   })
-  amount: number;
+  name: string;
 
   @Expose()
   @ApiProperty({
-    description: 'Detailed description of the reward',
-    example: 'Special summer festival item',
+    description: 'Description of the reward',
+    required: false,
   })
-  description: string;
+  description?: string;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Number of times this reward can be claimed',
+  })
+  quantity: number;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Type-specific details of the reward',
+    required: false,
+  })
+  pointDetails?: PointRewardDetailsDto;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Type-specific details of the reward',
+    required: false,
+  })
+  itemDetails?: ItemRewardDetailsDto;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Type-specific details of the reward',
+    required: false,
+  })
+  couponDetails?: CouponRewardDetailsDto;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Type of the condition',
+    type: ConditionTypeDto,
+  })
+  conditionType: string;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Configuration for the reward conditions',
+    type: ConditionConfigDto,
+  })
+  conditionConfig: ConditionConfigDto;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Description of the conditions for the reward',
+  })
+  conditionsDescription: string;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Creation timestamp',
+  })
+  createdAt: Date;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Last update timestamp',
+  })
+  updatedAt: Date;
 }

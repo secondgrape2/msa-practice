@@ -16,15 +16,6 @@ export class GameEventEntity {
   @Prop({ trim: true })
   description?: string;
 
-  @Prop({ required: true, trim: true })
-  conditionsDescription: string;
-
-  @Prop({ type: String, index: true })
-  conditionType?: string;
-
-  @Prop({ type: Object, required: true, default: {} })
-  conditionConfig: ConditionConfig;
-
   @Prop({ required: true, type: Date })
   startAt: Date;
 
@@ -44,9 +35,6 @@ export const toGameEventDomain = (doc: GameEventDocument): GameEvent => ({
   id: doc._id.toString(),
   name: doc.name,
   description: doc.description,
-  conditionsDescription: doc.conditionsDescription,
-  conditionType: doc.conditionType,
-  conditionConfig: doc.conditionConfig,
   startAt: doc.startAt,
   endAt: doc.endAt,
   isActive: doc.isActive,
