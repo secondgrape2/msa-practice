@@ -3,22 +3,38 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class UserResponseDto {
   @Expose()
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Unique identifier of the user',
+    example: 'user123',
+  })
   id: string;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Email address of the user',
+    example: 'user@example.com',
+  })
   email: string;
 
   @Expose()
-  @ApiProperty({ type: [String] })
+  @ApiProperty({
+    description: 'List of roles assigned to the user',
+    type: [String],
+    example: ['user', 'admin'],
+  })
   roles: string[];
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Creation timestamp of the user account',
+    example: '2024-03-20T12:00:00Z',
+  })
   createdAt: Date;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Last update timestamp of the user account',
+    example: '2024-03-20T12:00:00Z',
+  })
   updatedAt: Date;
 }

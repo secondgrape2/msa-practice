@@ -100,7 +100,7 @@ export class GameEventController {
     });
   }
 
-  @Get('admin/rewards/history')
+  @Get('admin/rewards/request/history')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE.AUDITOR, ROLE.ADMIN)
   async getRewardHistory(): Promise<RewardResponseDto[]> {
