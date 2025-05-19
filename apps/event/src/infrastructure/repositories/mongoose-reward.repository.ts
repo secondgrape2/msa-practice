@@ -8,8 +8,10 @@ import {
 } from '../../schemas/reward.schema';
 import { RewardRepository } from './reward.repository.interface';
 import { Reward } from '../../domain/reward.domain';
+import { HandleMongoClassErrors } from '@app/common/decorators/mongo-error-class.decorator';
 
 @Injectable()
+@HandleMongoClassErrors()
 export class MongooseRewardRepository implements RewardRepository {
   constructor(
     @InjectModel(RewardEntity.name)

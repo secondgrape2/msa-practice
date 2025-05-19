@@ -130,34 +130,6 @@ export class ConditionTypeDto {
 }
 
 /**
- * Custom validator to ensure the correct details field exists based on the reward type
- */
-function validateRewardDetails(type: string, details: any) {
-  if (!details) {
-    return false;
-  }
-
-  switch (type) {
-    case 'point':
-      return 'pointAmount' in details;
-    case 'item':
-      return (
-        'itemId' in details &&
-        'itemName' in details &&
-        'itemQuantity' in details
-      );
-    case 'coupon':
-      return (
-        'couponCode' in details &&
-        'discountAmount' in details &&
-        'discountType' in details
-      );
-    default:
-      return false;
-  }
-}
-
-/**
  * DTO for creating a new reward
  */
 export class CreateRewardDto {
@@ -243,31 +215,11 @@ export class CreateRewardDto {
   @Type(() => ConditionConfigDto)
   conditionConfig: ConditionConfigDto;
 
-  @Validate(
-    (value: CreateRewardDto) => {
-      const details = {
-        point: value.pointDetails,
-        item: value.itemDetails,
-        coupon: value.couponDetails,
-      }[value.type];
-
-      if (!validateRewardDetails(value.type, details)) {
-        return false;
-      }
-
-      return true;
-    },
-    {
-      message: (args) => {
-        const type = args.value.type;
-        return `Invalid or missing details for reward type '${type}'. Required fields:
-        ${type === 'point' ? 'pointAmount' : ''}
-        ${type === 'item' ? 'itemId, itemName, itemQuantity' : ''}
-        ${type === 'coupon' ? 'couponCode, discountAmount, discountType' : ''}`;
-      },
-    },
-  )
-  validateDetails() {
-    return true;
-  }
+  @ApiProperty({
+    description: 'Description of the conditions',
+    example: 'Get 1000 points for participating in the summer festival',
+  })
+  @IsString()
+  @IsNotEmpty()
+  conditionsDescription: string;
 }

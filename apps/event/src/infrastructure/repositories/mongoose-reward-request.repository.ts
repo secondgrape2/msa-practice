@@ -10,8 +10,10 @@ import {
   RewardRequest,
   RewardRequestRepository,
 } from '../../domain/reward-request.domain';
+import { HandleMongoClassErrors } from '@app/common/decorators/mongo-error-class.decorator';
 
 @Injectable()
+@HandleMongoClassErrors()
 export class MongooseRewardRequestRepository
   implements RewardRequestRepository
 {

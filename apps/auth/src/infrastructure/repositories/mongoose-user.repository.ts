@@ -8,8 +8,10 @@ import {
 } from '../../schemas/user.schema';
 import { UserRepository } from './user.repository.interface';
 import { User } from '../../interfaces/auth.interface';
+import { HandleMongoClassErrors } from '@app/common/decorators/mongo-error-class.decorator';
 
 @Injectable()
+@HandleMongoClassErrors()
 export class MongooseUserRepository implements UserRepository {
   constructor(
     @InjectModel(UserEntity.name)
