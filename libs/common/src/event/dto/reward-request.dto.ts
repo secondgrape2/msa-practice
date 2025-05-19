@@ -13,6 +13,14 @@ export class CreateRewardRequestDto {
   @IsString()
   @IsNotEmpty()
   eventId: string;
+
+  @ApiProperty({
+    description: 'ID of the reward to request',
+    example: 'reward123',
+  })
+  @IsString()
+  @IsNotEmpty()
+  rewardId: string;
 }
 
 export class RewardRequestResponseDto {

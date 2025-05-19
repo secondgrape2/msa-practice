@@ -103,3 +103,77 @@ docker compose -f docker-compose.yaml up -d event_service mongo_db
 
 - 액세스 토큰 (15분 만료)
 - 리프레시 토큰 (7일 만료)
+
+### 조건 테스트
+
+시스템은 이벤트 조건 테스트를 위해 mock 사용자 상태를 사용합니다. 현재 모든 사용자는 다음과 같은 mock 상태를 가집니다:
+
+```typescript
+{
+  level: 15,
+  loginStreak: 10
+}
+```
+
+이 mock 상태를 기반으로 다양한 조건 구성을 테스트할 수 있습니다. 다음은 테스트 케이스 예시입니다:
+
+1. 레벨 기반 조건:
+
+```typescript
+// 통과 (사용자 레벨 15 >= 필요 레벨 10)
+{
+  operator: 'AND',
+  rules: [{ type: 'USER_LEVEL', params: { minLevel: 10 } }]
+}
+
+// 실패 (사용자 레벨 15 < 필요 레벨 20)
+{
+  operator: 'AND',
+  rules: [{ type: 'USER_LEVEL', params: { minLevel: 20 } }]
+}
+```
+
+2. 로그인 스트릭 조건:
+
+```typescript
+// 통과 (사용자 스트릭 10 >= 필요 일수 7)
+{
+  operator: 'AND',
+  rules: [{ type: 'LOGIN_STREAK', params: { days: 7 } }]
+}
+
+// 실패 (사용자 스트릭 10 < 필요 일수 15)
+{
+  operator: 'AND',
+  rules: [{ type: 'LOGIN_STREAK', params: { days: 15 } }]
+}
+```
+
+3. 복합 조건:
+
+```typescript
+// 통과 (모든 조건 충족)
+{
+  operator: 'AND',
+  rules: [
+    { type: 'USER_LEVEL', params: { minLevel: 10 } },
+    { type: 'LOGIN_STREAK', params: { days: 7 } }
+  ]
+}
+
+// 통과 (하나 이상의 조건 충족)
+{
+  operator: 'OR',
+  rules: [
+    { type: 'USER_LEVEL', params: { minLevel: 20 } },
+    { type: 'LOGIN_STREAK', params: { days: 7 } }
+  ]
+}
+```
+
+테스트 실행 방법:
+
+```bash
+cd apps/event
+npm test
+```

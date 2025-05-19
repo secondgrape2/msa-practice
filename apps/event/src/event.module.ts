@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { GameEventManagementService } from './application/game-event-management.service';
+import {
+  GameEventManagementService,
+  USER_STATE_SERVICE,
+} from './application/game-event-management.service';
 import { RewardRequestServiceImpl } from './application/reward-request.service';
 import { GameEventController } from './game-event.controller';
 import { GameEventServiceImpl } from './game-event.service';
@@ -24,6 +27,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthCoreModule } from '@app/common/auth-core/auth-core.module';
 import { JwtSigningKeyProvider } from '@app/common/auth-core/interfaces/jwt-key-provider.interface';
 import { JWT_SIGNING_KEY_PROVIDER } from '@app/common/auth-core/interfaces/jwt-key-provider.interface';
+import { MockUserStateService } from './application/mock-user-state.service';
 
 @Module({
   imports: [
@@ -65,6 +69,10 @@ import { JWT_SIGNING_KEY_PROVIDER } from '@app/common/auth-core/interfaces/jwt-k
     {
       provide: REWARD_REQUEST_SERVICE,
       useClass: RewardRequestServiceImpl,
+    },
+    {
+      provide: USER_STATE_SERVICE,
+      useClass: MockUserStateService,
     },
     GameEventManagementService,
   ],

@@ -5,9 +5,11 @@ import {
   REWARD_REQUEST_STATUS,
   RewardRequestStatus,
 } from '@app/common/event/interfaces/reward.interface';
+import { Index } from '@typegoose/typegoose';
 
-const REWARD_REQUEST_COLLECTION_NAME = 'reward.requests';
+const REWARD_REQUEST_COLLECTION_NAME = 'reward_requests';
 @Schema({ timestamps: true, collection: REWARD_REQUEST_COLLECTION_NAME })
+@Index({ userId: 1, eventId: 1, rewardId: 1 }, { unique: true })
 export class RewardRequestEntity {
   _id: Types.ObjectId;
 
@@ -17,15 +19,22 @@ export class RewardRequestEntity {
   @Prop({ required: true })
   eventId: string;
 
-  @Prop()
-  rewardId?: string;
+  @Prop({ required: true })
+  rewardId: string;
 
   @Prop({
     type: String,
     enum: Object.values(REWARD_REQUEST_STATUS),
+    required: true,
     default: REWARD_REQUEST_STATUS.PENDING,
   })
   status: RewardRequestStatus;
+
+  @Prop({ type: String, required: false })
+  failureReason?: string;
+
+  @Prop({ type: Date, required: false })
+  completedAt?: Date;
 
   @Prop({ required: true })
   requestedAt: Date;
@@ -49,7 +58,9 @@ export const toRewardRequestDomain = (
   eventId: doc.eventId,
   rewardId: doc.rewardId,
   status: doc.status,
+  failureReason: doc.failureReason,
   requestedAt: doc.requestedAt,
+  completedAt: doc.completedAt,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
 });
