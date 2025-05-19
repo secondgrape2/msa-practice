@@ -75,7 +75,7 @@ export class GameEventController {
 
   @Get()
   async findAll(): Promise<GameEventResponseDto[]> {
-    const events = await this.gameEventService.findAll();
+    const events = await this.gameEventService.findActive();
     return plainToInstance(GameEventResponseDto, events, {
       excludeExtraneousValues: true,
     });
@@ -88,14 +88,6 @@ export class GameEventController {
     const eventWithRewards =
       await this.gameEventManagementService.getEventWithRewards(eventId);
     return plainToInstance(GameEventWithRewardsResponseDto, eventWithRewards, {
-      excludeExtraneousValues: true,
-    });
-  }
-
-  @Get('active/current')
-  async findActive(): Promise<GameEventResponseDto[]> {
-    const events = await this.gameEventService.findActive();
-    return plainToInstance(GameEventResponseDto, events, {
       excludeExtraneousValues: true,
     });
   }

@@ -116,8 +116,6 @@ export interface Reward {
   name: string;
   /** Optional detailed description of the reward */
   description?: string;
-  /** Number of times this reward can be claimed */
-  quantity: number;
   /** Point details of the reward */
   pointDetails?: PointRewardDetails;
   /** Item details of the reward */

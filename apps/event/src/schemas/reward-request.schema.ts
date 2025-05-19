@@ -7,20 +7,20 @@ import {
   RewardRequestStatus,
 } from '../domain/reward.domain';
 
-const REWARD_REQUEST_COLLECTION_NAME = 'reward_requests';
+const REWARD_REQUEST_COLLECTION_NAME = 'reward.requests';
 @Schema({ timestamps: true, collection: REWARD_REQUEST_COLLECTION_NAME })
 @Index({ userId: 1, eventId: 1, rewardId: 1 }, { unique: true })
 export class RewardRequestEntity {
   _id: Types.ObjectId;
 
-  @Prop({ required: true })
-  userId: string;
+  @Prop({ required: true, type: Types.ObjectId })
+  userId: Types.ObjectId;
 
-  @Prop({ required: true })
-  eventId: string;
+  @Prop({ required: true, type: Types.ObjectId })
+  eventId: Types.ObjectId;
 
-  @Prop({ required: true })
-  rewardId: string;
+  @Prop({ required: true, type: Types.ObjectId })
+  rewardId: Types.ObjectId;
 
   @Prop({
     type: String,
@@ -54,9 +54,9 @@ export const toRewardRequestDomain = (
   doc: RewardRequestDocument,
 ): RewardRequest => ({
   id: doc._id.toString(),
-  userId: doc.userId,
-  eventId: doc.eventId,
-  rewardId: doc.rewardId,
+  userId: doc.userId.toString(),
+  eventId: doc.eventId.toString(),
+  rewardId: doc.rewardId.toString(),
   status: doc.status,
   failureReason: doc.failureReason,
   requestedAt: doc.requestedAt,

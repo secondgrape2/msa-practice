@@ -40,9 +40,6 @@ export class RewardEntity {
   @Prop({ trim: true })
   description?: string;
 
-  @Prop({ required: true })
-  quantity: number;
-
   @Prop({ type: Object })
   pointDetails?: PointRewardDetails;
 
@@ -70,10 +67,9 @@ export const RewardSchema = SchemaFactory.createForClass(RewardEntity);
 export const toRewardDomain = (doc: RewardDocument): Reward => ({
   id: doc._id.toString(),
   eventId: doc.eventId.toString(),
-  type: doc.type,
   name: doc.name,
+  type: doc.type,
   description: doc.description,
-  quantity: doc.quantity,
   pointDetails: doc.pointDetails,
   itemDetails: doc.itemDetails,
   couponDetails: doc.couponDetails,
