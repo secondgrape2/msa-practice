@@ -15,7 +15,7 @@ export interface RewardService {
    * @param createRewardDto - Data for creating the reward
    * @returns Promise resolving to the created Reward
    */
-  create(createRewardDto: CreateRewardDto): Promise<Reward>;
+  create(createRewardDto: Partial<Reward>): Promise<Reward>;
 
   /**
    * @description Retrieves all rewards.
@@ -29,4 +29,8 @@ export interface RewardService {
    * @returns Promise resolving to an array of rewards for the specified event
    */
   findByEventId(eventId: string): Promise<Reward[]>;
+
+  findById(id: string): Promise<Reward | null>;
+
+  update(id: string, data: Partial<Reward>): Promise<Reward>;
 }

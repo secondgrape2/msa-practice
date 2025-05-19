@@ -1,3 +1,5 @@
+import { CompoundCondition } from '@app/common/event/dto/game-event.dto';
+
 /**
  * Represents the logical operator for combining multiple condition rules
  * @example 'AND' - All rules must be satisfied
@@ -21,23 +23,6 @@ export interface BaseConditionRule {
   type: string;
   /** Parameters specific to the condition type */
   params: ConditionParams;
-}
-
-/**
- * Represents a compound condition that combines multiple rules with a logical operator
- * @example {
- *   operator: 'AND',
- *   rules: [
- *     { type: 'LOGIN_STREAK', params: { days: 7 } },
- *     { type: 'USER_LEVEL', params: { minLevel: 10 } }
- *   ]
- * }
- */
-export interface CompoundCondition {
-  /** The logical operator to combine rules */
-  operator: ConditionOperator;
-  /** Array of condition rules to be evaluated */
-  rules: BaseConditionRule[];
 }
 
 /**
@@ -65,12 +50,6 @@ export interface GameEvent {
   name: string;
   /** Optional detailed description of the game event */
   description?: string;
-  /** Human-readable description of the event conditions */
-  conditionsDescription: string;
-  /** Optional type categorization of the event */
-  conditionType?: string;
-  /** Configuration for event conditions */
-  conditionConfig: ConditionConfig;
   /** Start date of the event */
   startAt: Date;
   /** End date of the event */

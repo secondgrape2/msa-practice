@@ -1,4 +1,5 @@
 import { CreateGameEventDto } from '@app/common/event/dto/game-event.dto';
+import { CreateRewardDto } from '@app/common/event/dto/reward.dto';
 import { INestApplication } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -10,6 +11,8 @@ import request from 'supertest';
 import { ROLE } from '@app/common/auth-core/constants/role.constants';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
+import { REWARD_TYPE } from '../src/domain/reward.domain';
+import { CONDITION_TYPE } from '../src/domain/reward.domain';
 
 describe('GameEventController (Integration)', () => {
   let app: INestApplication;
@@ -17,6 +20,7 @@ describe('GameEventController (Integration)', () => {
   let dbConnection: Connection;
   let adminToken: string;
   let userToken: string;
+  let createdEventId: string;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -60,7 +64,7 @@ describe('GameEventController (Integration)', () => {
       JWT_SECRET,
       { expiresIn: 86400 },
     );
-  }, 30000); // Increase timeout for setup
+  }, 30000);
 
   afterAll(async () => {
     try {
@@ -70,7 +74,7 @@ describe('GameEventController (Integration)', () => {
     } catch (error) {
       console.error('Error during cleanup:', error);
     }
-  }, 30000); // Increase timeout for cleanup
+  }, 30000);
 
   afterEach(async () => {
     const collections = dbConnection.collections;
@@ -89,19 +93,6 @@ describe('GameEventController (Integration)', () => {
         description: 'Test Description',
         startAt: new Date('2024-01-01T00:00:00Z'),
         endAt: new Date('2024-12-31T23:59:59Z'),
-        conditionsDescription: 'Test conditions',
-        conditionType: 'SIMPLE',
-        conditionConfig: {
-          operator: 'AND',
-          rules: [
-            {
-              type: 'LEVEL',
-              params: {
-                minLevel: 10,
-              },
-            },
-          ],
-        },
         isActive: true,
       };
 
@@ -111,6 +102,7 @@ describe('GameEventController (Integration)', () => {
         .send(createEventDto)
         .expect(201);
 
+      createdEventId = response.body.id;
       expect(response.body).toHaveProperty('id');
       expect(response.body.name).toBe(createEventDto.name);
       expect(response.body.description).toBe(createEventDto.description);
@@ -125,19 +117,6 @@ describe('GameEventController (Integration)', () => {
         description: 'Test Description',
         startAt: new Date('2024-01-01T00:00:00Z'),
         endAt: new Date('2024-12-31T23:59:59Z'),
-        conditionsDescription: 'Test conditions',
-        conditionType: 'SIMPLE',
-        conditionConfig: {
-          operator: 'AND',
-          rules: [
-            {
-              type: 'LEVEL',
-              params: {
-                minLevel: 10,
-              },
-            },
-          ],
-        },
         isActive: true,
       };
 
@@ -149,6 +128,231 @@ describe('GameEventController (Integration)', () => {
     });
   });
 
+  describe('POST /events/v1/:eventId/rewards', () => {
+    beforeEach(async () => {
+      // Create an event for each test
+      const createEventDto: CreateGameEventDto = {
+        name: 'Test Event for Rewards',
+        description: 'Test Description for Rewards',
+        startAt: new Date('2024-01-01T00:00:00Z'),
+        endAt: new Date('2024-12-31T23:59:59Z'),
+        isActive: true,
+      };
+
+      const response = await request(app.getHttpServer())
+        .post('/events/v1/admin')
+        .set('Cookie', [`access_token=${adminToken}`])
+        .send(createEventDto);
+
+      createdEventId = response.body.id;
+    });
+
+    it('should create a point reward', async () => {
+      const createRewardDto: CreateRewardDto = {
+        type: REWARD_TYPE.POINT,
+        name: 'Login Bonus',
+        description: 'Daily login bonus',
+        quantity: 1,
+        pointDetails: {
+          pointAmount: 1000,
+          expiryDate: new Date('2024-12-31T23:59:59Z'),
+        },
+        conditionType: CONDITION_TYPE.LEVEL,
+        conditionConfig: {
+          operator: 'AND',
+          rules: [
+            {
+              type: 'LEVEL',
+              params: { minLevel: 5 },
+            },
+          ],
+        },
+        conditionsDescription: '레벨 5 이상',
+      };
+
+      const response = await request(app.getHttpServer())
+        .post(`/events/v1/${createdEventId}/rewards`)
+        .set('Cookie', [`access_token=${adminToken}`])
+        .send(createRewardDto)
+        .expect(201);
+      expect(response.body).toHaveProperty('id');
+      expect(response.body.type).toBe(REWARD_TYPE.POINT);
+      expect(response.body.name).toBe(createRewardDto.name);
+      expect(response.body.description).toBe(createRewardDto.description);
+      expect(response.body.quantity).toBe(createRewardDto.quantity);
+      if (createRewardDto.pointDetails) {
+        expect(response.body.pointDetails).toEqual({
+          pointAmount: createRewardDto.pointDetails.pointAmount,
+          expiryDate: createRewardDto.pointDetails.expiryDate?.toISOString(),
+        });
+      }
+      expect(response.body.conditionType).toBe(createRewardDto.conditionType);
+      expect(response.body.conditionConfig).toEqual(
+        createRewardDto.conditionConfig,
+      );
+      expect(response.body.conditionsDescription).toBe(
+        createRewardDto.conditionsDescription,
+      );
+    });
+
+    it('should create an item reward', async () => {
+      const createRewardDto: CreateRewardDto = {
+        type: REWARD_TYPE.ITEM,
+        name: 'Premium Sword',
+        description: 'Legendary sword for warriors',
+        quantity: 1,
+        itemDetails: {
+          itemId: 'sword_001',
+          itemName: 'Premium Sword',
+          itemQuantity: 1,
+        },
+        conditionType: CONDITION_TYPE.LEVEL,
+        conditionConfig: {
+          operator: 'AND',
+          rules: [
+            {
+              type: 'LEVEL',
+              params: { minLevel: 10 },
+            },
+          ],
+        },
+        conditionsDescription: '레벨 10 이상',
+      };
+
+      const response = await request(app.getHttpServer())
+        .post(`/events/v1/${createdEventId}/rewards`)
+        .set('Cookie', [`access_token=${adminToken}`])
+        .send(createRewardDto)
+        .expect(201);
+
+      expect(response.body).toHaveProperty('id');
+      expect(response.body.type).toBe(REWARD_TYPE.ITEM);
+      expect(response.body.name).toBe(createRewardDto.name);
+      expect(response.body.description).toBe(createRewardDto.description);
+      expect(response.body.quantity).toBe(createRewardDto.quantity);
+      if (createRewardDto.itemDetails) {
+        expect(response.body.itemDetails).toEqual(createRewardDto.itemDetails);
+      }
+      expect(response.body.conditionType).toBe(createRewardDto.conditionType);
+      expect(response.body.conditionConfig).toEqual(
+        createRewardDto.conditionConfig,
+      );
+      expect(response.body.conditionsDescription).toBe(
+        createRewardDto.conditionsDescription,
+      );
+    });
+
+    it('should create a coupon reward', async () => {
+      const createRewardDto: CreateRewardDto = {
+        type: REWARD_TYPE.COUPON,
+        name: 'Summer Discount',
+        description: '20% off on all items',
+        quantity: 1,
+        couponDetails: {
+          couponCode: 'SUMMER2024',
+          discountAmount: 20,
+          discountType: 'percentage',
+          expiryDate: new Date('2024-08-31T23:59:59Z'),
+        },
+        conditionType: CONDITION_TYPE.LOGIN_STREAK,
+        conditionConfig: {
+          operator: 'AND',
+          rules: [
+            {
+              type: 'LOGIN_STREAK',
+              params: { minStreak: 7 },
+            },
+          ],
+        },
+        conditionsDescription: '7일 연속 로그인',
+      };
+
+      const response = await request(app.getHttpServer())
+        .post(`/events/v1/${createdEventId}/rewards`)
+        .set('Cookie', [`access_token=${adminToken}`])
+        .send(createRewardDto)
+        .expect(201);
+
+      expect(response.body).toHaveProperty('id');
+      expect(response.body.type).toBe(REWARD_TYPE.COUPON);
+      expect(response.body.name).toBe(createRewardDto.name);
+      expect(response.body.description).toBe(createRewardDto.description);
+      expect(response.body.quantity).toBe(createRewardDto.quantity);
+      if (createRewardDto.couponDetails) {
+        expect(response.body.couponDetails).toEqual({
+          ...createRewardDto.couponDetails,
+          expiryDate: createRewardDto.couponDetails.expiryDate?.toISOString(),
+        });
+      }
+      expect(response.body.conditionType).toBe(createRewardDto.conditionType);
+      expect(response.body.conditionConfig).toEqual(
+        createRewardDto.conditionConfig,
+      );
+      expect(response.body.conditionsDescription).toBe(
+        createRewardDto.conditionsDescription,
+      );
+    });
+
+    it('should return 403 when user is not admin', async () => {
+      const createRewardDto: CreateRewardDto = {
+        type: REWARD_TYPE.POINT,
+        name: 'Login Bonus',
+        description: 'Daily login bonus',
+        quantity: 1,
+        pointDetails: {
+          pointAmount: 1000,
+        },
+        conditionType: CONDITION_TYPE.LEVEL,
+        conditionConfig: {
+          operator: 'AND',
+          rules: [
+            {
+              type: 'LEVEL',
+              params: { minLevel: 5 },
+            },
+          ],
+        },
+        conditionsDescription: '레벨 5 이상',
+      };
+
+      await request(app.getHttpServer())
+        .post(`/events/v1/${createdEventId}/rewards`)
+        .set('Cookie', [`access_token=${userToken}`])
+        .send(createRewardDto)
+        .expect(403);
+    });
+
+    it('should return 422 when event does not exist', async () => {
+      const nonExistentEventId = new Types.ObjectId().toString();
+      const createRewardDto: CreateRewardDto = {
+        type: REWARD_TYPE.POINT,
+        name: 'Login Bonus',
+        description: 'Daily login bonus',
+        quantity: 1,
+        pointDetails: {
+          pointAmount: 1000,
+        },
+        conditionType: CONDITION_TYPE.LEVEL,
+        conditionConfig: {
+          operator: 'AND',
+          rules: [
+            {
+              type: 'LEVEL',
+              params: { minLevel: 5 },
+            },
+          ],
+        },
+        conditionsDescription: '레벨 5 이상',
+      };
+
+      await request(app.getHttpServer())
+        .post(`/events/v1/${nonExistentEventId}/rewards`)
+        .set('Cookie', [`access_token=${adminToken}`])
+        .send(createRewardDto)
+        .expect(422);
+    });
+  });
+
   describe('GET /events/v1', () => {
     it('should return all game events', async () => {
       // Create test events first
@@ -157,19 +361,7 @@ describe('GameEventController (Integration)', () => {
         description: 'Test Description 1',
         startAt: new Date('2024-01-01T00:00:00Z'),
         endAt: new Date('2024-12-31T23:59:59Z'),
-        conditionsDescription: 'Test conditions',
-        conditionType: 'SIMPLE',
-        conditionConfig: {
-          operator: 'AND',
-          rules: [
-            {
-              type: 'LEVEL',
-              params: {
-                minLevel: 10,
-              },
-            },
-          ],
-        },
+
         isActive: true,
       };
 
@@ -204,19 +396,7 @@ describe('GameEventController (Integration)', () => {
         description: 'Test Description for Get',
         startAt: new Date('2024-01-01T00:00:00Z'),
         endAt: new Date('2024-12-31T23:59:59Z'),
-        conditionsDescription: 'Test conditions',
-        conditionType: 'SIMPLE',
-        conditionConfig: {
-          operator: 'AND',
-          rules: [
-            {
-              type: 'LEVEL',
-              params: {
-                minLevel: 10,
-              },
-            },
-          ],
-        },
+
         isActive: true,
       };
 

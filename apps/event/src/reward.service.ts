@@ -71,4 +71,8 @@ export class RewardServiceImpl implements RewardService {
   async remove(id: string): Promise<void> {
     return this.rewardRepository.delete(id);
   }
+
+  async findById(id: string): Promise<Reward | null> {
+    return this.rewardRepository.findById(id);
+  }
 }

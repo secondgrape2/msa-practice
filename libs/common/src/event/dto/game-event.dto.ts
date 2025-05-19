@@ -111,44 +111,6 @@ export class CreateGameEventDto {
   endAt: Date;
 
   @ApiProperty({
-    description: 'Description of the event conditions',
-    example: 'Complete daily quests for 7 days to earn rewards',
-  })
-  @IsNotEmpty()
-  @IsString()
-  conditionsDescription: string;
-
-  @ApiProperty({
-    description: 'Type of the condition',
-    example: 'COMPOUND',
-    enum: ['COMPOUND'],
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  conditionType?: string;
-
-  @ApiProperty({
-    description: 'Configuration for the event conditions',
-    type: CompoundCondition,
-    example: {
-      operator: 'AND',
-      rules: [
-        {
-          type: 'LEVEL',
-          params: { minLevel: 10 },
-        },
-        {
-          type: 'DAYS',
-          params: { days: 7 },
-        },
-      ],
-    },
-  })
-  @IsNotEmpty()
-  conditionConfig: CompoundCondition;
-
-  @ApiProperty({
     description: 'Whether the event is currently active',
     example: true,
   })

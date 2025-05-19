@@ -3,7 +3,7 @@ import { CreateRewardDto } from '@app/common/event/dto/reward.dto';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { GameEvent } from '../domain/game-event.domain';
 import { RewardRequest } from '../domain/reward-request.domain';
-import { Reward } from '../domain/reward.domain';
+import { Reward, REWARD_REQUEST_STATUS } from '../domain/reward.domain';
 import { ConditionChecker } from '../domain/condition-checker';
 import { UserStateService } from '../domain/user-state.domain';
 import {
@@ -15,7 +15,6 @@ import {
   REWARD_REQUEST_SERVICE,
   RewardRequestService,
 } from './interfaces/reward-request.interface';
-import { REWARD_REQUEST_STATUS } from '@app/common/event/interfaces/reward.interface';
 
 export const USER_STATE_SERVICE = 'USER_STATE_SERVICE';
 
@@ -65,7 +64,10 @@ export class GameEventManagementService {
   ): Promise<Reward> {
     const event = await this.gameEventService.findOne(eventId);
     if (!event) {
-      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Event not found',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
 
     return this.rewardService.create({
@@ -79,44 +81,62 @@ export class GameEventManagementService {
     eventId: string,
     rewardId: string,
   ): Promise<RewardRequest> {
-    const userState = await this.userStateService.getUserState(userId);
+    // Check if event exists
     const event = await this.gameEventService.findOne(eventId);
     if (!event) {
       throw new HttpException(
-        'Event not found',
-        HttpStatus.UNPROCESSABLE_ENTITY,
+        '이벤트를 찾을 수 없습니다',
+        HttpStatus.NOT_FOUND,
       );
     }
 
+    // Check if reward exists and belongs to the event
+    const reward = await this.rewardService.findById(rewardId);
+    if (!reward) {
+      throw new HttpException('보상을 찾을 수 없습니다', HttpStatus.NOT_FOUND);
+    }
+    if (reward.eventId !== eventId) {
+      throw new HttpException(
+        '해당 이벤트의 보상이 아닙니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // Check if user meets reward conditions
+    const userState = await this.userStateService.getUserState(userId);
     const meetsConditions = ConditionChecker.checkCondition(
-      event.conditionConfig,
+      reward.conditionConfig,
       userState,
     );
     if (!meetsConditions) {
       throw new HttpException(
-        'User does not meet the event conditions',
+        '보상 수령 조건을 충족하지 않습니다',
         HttpStatus.FORBIDDEN,
       );
     }
 
+    // Check for existing requests
     const existingRequests =
       await this.rewardRequestService.findByUserId(userId);
     const existingRequest = existingRequests.find(
-      (request) => request.eventId === eventId,
+      (request) => request.eventId === eventId && request.rewardId === rewardId,
     );
 
     if (existingRequest) {
+      // If there's a pending request, throw an error
       if (existingRequest.status === REWARD_REQUEST_STATUS.PENDING) {
         throw new HttpException(
-          'Already a request in progress',
+          '이미 진행 중인 보상 요청이 있습니다',
           HttpStatus.CONFLICT,
         );
       }
 
+      // If there's a successful request, throw an error
       if (existingRequest.status === REWARD_REQUEST_STATUS.SUCCESS) {
-        throw new HttpException('Already received reward', HttpStatus.CONFLICT);
+        throw new HttpException('이미 보상을 받았습니다', HttpStatus.CONFLICT);
       }
 
+      // If there's a failed request, update it to pending
       if (existingRequest.status === REWARD_REQUEST_STATUS.FAILED) {
         return this.rewardRequestService.updateStatus(
           existingRequest.id,
