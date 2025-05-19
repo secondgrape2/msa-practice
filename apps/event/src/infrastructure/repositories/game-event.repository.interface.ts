@@ -1,3 +1,7 @@
+import {
+  PaginationOptions,
+  PaginationResult,
+} from '@app/common/interfaces/pagination.interface';
 import { CreateGameEvent, GameEvent } from '../../domain/game-event.domain';
 
 /**
@@ -37,7 +41,7 @@ export interface GameEventRepository {
    * - current time is between startAt and endAt
    * @returns Promise resolving to an array of active game events
    */
-  findActive(): Promise<GameEvent[]>;
+  findActive(options: PaginationOptions): Promise<PaginationResult<GameEvent>>;
 
   /**
    * Updates an existing game event

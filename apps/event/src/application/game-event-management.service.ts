@@ -15,6 +15,10 @@ import {
   REWARD_REQUEST_SERVICE,
   RewardRequestService,
 } from './interfaces/reward-request.interface';
+import {
+  PaginationOptions,
+  PaginationResult,
+} from '@app/common/interfaces/pagination.interface';
 
 export const USER_STATE_SERVICE = 'USER_STATE_SERVICE';
 
@@ -181,15 +185,23 @@ export class GameEventManagementService {
     );
   }
 
-  async findRewardRequestsByUserId(userId: string): Promise<RewardRequest[]> {
-    return this.rewardRequestService.findByUserId(userId);
+  async findRewardRequestsByUserId(
+    userId: string,
+    options?: PaginationOptions,
+  ): Promise<PaginationResult<RewardRequest>> {
+    return this.rewardRequestService.findByUserIdWithPagination(
+      userId,
+      options,
+    );
   }
 
   async findRewardRequestsByEventId(eventId: string): Promise<RewardRequest[]> {
     return this.rewardRequestService.findByEventId(eventId);
   }
 
-  async findAllRewardRequests(): Promise<RewardRequest[]> {
-    return this.rewardRequestService.findAll();
+  async findAllRewardRequests(
+    options?: PaginationOptions,
+  ): Promise<PaginationResult<RewardRequest>> {
+    return this.rewardRequestService.findAll(options);
   }
 }

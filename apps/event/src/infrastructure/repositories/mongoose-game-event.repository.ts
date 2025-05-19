@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import {
   GameEventEntity,
   GameEventDocument,
@@ -9,6 +9,10 @@ import {
 import { GameEventRepository } from './game-event.repository.interface';
 import { GameEvent } from '../../domain/game-event.domain';
 import { HandleMongoClassErrors } from '@app/common/decorators/mongo-error-class.decorator';
+import {
+  PaginationOptions,
+  PaginationResult,
+} from '@app/common/interfaces/pagination.interface';
 
 @Injectable()
 @HandleMongoClassErrors()
@@ -33,16 +37,40 @@ export class MongooseGameEventRepository implements GameEventRepository {
     return gameEvent ? toGameEventDomain(gameEvent) : null;
   }
 
-  async findActive(): Promise<GameEvent[]> {
+  private async findWithPagination(
+    filter: FilterQuery<GameEvent>,
+    options: PaginationOptions,
+  ): Promise<PaginationResult<GameEvent>> {
+    const { page = 1, limit = 10 } = options;
+    const skip = (page - 1) * limit;
+    const gameEvents = await this.gameEventModel.aggregate([
+      {
+        $match: filter,
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+    ]);
+    const total = await this.gameEventModel.countDocuments(filter).exec();
+    return { items: gameEvents.map(toGameEventDomain), total };
+  }
+
+  async findActive(
+    options: PaginationOptions,
+  ): Promise<PaginationResult<GameEvent>> {
+    const { page, limit } = options;
     const now = new Date();
-    const gameEvents = await this.gameEventModel
-      .find({
+    return this.findWithPagination(
+      {
         isActive: true,
         startAt: { $lte: now },
         endAt: { $gte: now },
-      })
-      .exec();
-    return gameEvents.map(toGameEventDomain);
+      },
+      options,
+    );
   }
 
   async update(id: string, data: Partial<GameEvent>): Promise<GameEvent> {

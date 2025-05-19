@@ -111,12 +111,14 @@ export class GatewayService {
     method: string,
     body?: RequestBody,
     cookies?: string,
+    queryParams?: Record<string, string | undefined>,
   ): Promise<T> {
     try {
       const response = await this.httpService.axiosRef.request({
         method,
         url: `${this.eventServiceUrl}${path}`,
         data: body,
+        params: queryParams,
         headers: {
           ...(cookies && { Cookie: cookies }),
         },

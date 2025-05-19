@@ -6,6 +6,10 @@ import {
   GAME_EVENT_REPOSITORY,
 } from './infrastructure/repositories/game-event.repository.interface';
 import { GameEventService } from './application/interfaces/game-event.interface';
+import {
+  PaginationOptions,
+  PaginationResult,
+} from '@app/common/interfaces/pagination.interface';
 
 @Injectable()
 export class GameEventServiceImpl implements GameEventService {
@@ -26,7 +30,9 @@ export class GameEventServiceImpl implements GameEventService {
     return this.gameEventRepository.findById(id);
   }
 
-  async findActive(): Promise<GameEvent[]> {
-    return this.gameEventRepository.findActive();
+  async findActiveWithPagination(
+    options: PaginationOptions,
+  ): Promise<PaginationResult<GameEvent>> {
+    return this.gameEventRepository.findActive(options);
   }
 }

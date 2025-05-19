@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import {
   RewardRequestEntity,
   RewardRequestDocument,
@@ -11,6 +11,10 @@ import {
   RewardRequestRepository,
 } from '../../domain/reward-request.domain';
 import { HandleMongoClassErrors } from '@app/common/decorators/mongo-error-class.decorator';
+import {
+  PaginationOptions,
+  PaginationResult,
+} from '@app/common/interfaces/pagination.interface';
 
 @Injectable()
 @HandleMongoClassErrors()
@@ -27,9 +31,10 @@ export class MongooseRewardRequestRepository
     return toRewardRequestDomain(rewardRequest);
   }
 
-  async findAll(): Promise<RewardRequest[]> {
-    const rewardRequests = await this.rewardRequestModel.find().exec();
-    return rewardRequests.map(toRewardRequestDomain);
+  async findAll(
+    options?: PaginationOptions,
+  ): Promise<PaginationResult<RewardRequest>> {
+    return this.findWithPagination({}, options);
   }
 
   async findById(id: string): Promise<RewardRequest | null> {
@@ -37,11 +42,39 @@ export class MongooseRewardRequestRepository
     return rewardRequest ? toRewardRequestDomain(rewardRequest) : null;
   }
 
+  private async findWithPagination(
+    filter: FilterQuery<RewardRequest>,
+    options?: PaginationOptions,
+  ): Promise<PaginationResult<RewardRequest>> {
+    const { page = 1, limit = 10 } = options ?? {};
+    const skip = (page - 1) * limit;
+    const rewardRequests = await this.rewardRequestModel.aggregate([
+      {
+        $match: filter,
+      },
+      {
+        $limit: limit,
+      },
+      {
+        $skip: skip,
+      },
+    ]);
+    const total = await this.rewardRequestModel.countDocuments(filter).exec();
+    return { items: rewardRequests.map(toRewardRequestDomain), total };
+  }
+
   async findByUserId(userId: string): Promise<RewardRequest[]> {
     const rewardRequests = await this.rewardRequestModel
       .find({ userId })
       .exec();
     return rewardRequests.map(toRewardRequestDomain);
+  }
+
+  async findByUserIdWithPagination(
+    userId: string,
+    options?: PaginationOptions,
+  ): Promise<PaginationResult<RewardRequest>> {
+    return this.findWithPagination({ userId }, options);
   }
 
   async findByEventId(eventId: string): Promise<RewardRequest[]> {

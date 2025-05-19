@@ -1,5 +1,7 @@
+import { PaginationOptions } from '@app/common/interfaces/pagination.interface';
 import { GameEvent } from '../../domain/game-event.domain';
 import { CreateGameEventDto } from '@app/common/event/dto/game-event.dto';
+import { PaginationResult } from '@app/common/interfaces/pagination.interface';
 
 /**
  * @description Service interface for managing game events.
@@ -34,5 +36,7 @@ export interface GameEventService {
    * @description Retrieves all currently active game events.
    * @returns Promise resolving to an array of active GameEvent
    */
-  findActive(): Promise<GameEvent[]>;
+  findActiveWithPagination(
+    options: PaginationOptions,
+  ): Promise<PaginationResult<GameEvent>>;
 }
