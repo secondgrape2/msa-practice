@@ -4,6 +4,8 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { GameEvent } from '../domain/game-event.domain';
 import { RewardRequest } from '../domain/reward-request.domain';
 import { Reward } from '../domain/reward.domain';
+import { ConditionChecker } from '../domain/condition-checker';
+import { UserStateService } from '../domain/user-state.domain';
 import {
   GAME_EVENT_SERVICE,
   GameEventService,
@@ -13,6 +15,9 @@ import {
   REWARD_REQUEST_SERVICE,
   RewardRequestService,
 } from './interfaces/reward-request.interface';
+import { REWARD_REQUEST_STATUS } from '@app/common/event/interfaces/reward.interface';
+
+export const USER_STATE_SERVICE = 'USER_STATE_SERVICE';
 
 @Injectable()
 export class GameEventManagementService {
@@ -23,6 +28,8 @@ export class GameEventManagementService {
     private readonly rewardService: RewardService,
     @Inject(REWARD_REQUEST_SERVICE)
     private readonly rewardRequestService: RewardRequestService,
+    @Inject(USER_STATE_SERVICE)
+    private readonly userStateService: UserStateService,
   ) {}
 
   async createEventWithReward(
@@ -70,18 +77,84 @@ export class GameEventManagementService {
   async createRewardRequest(
     userId: string,
     eventId: string,
+    rewardId: string,
   ): Promise<RewardRequest> {
-    // Check if event exists and is active
+    const userState = await this.userStateService.getUserState(userId);
     const event = await this.gameEventService.findOne(eventId);
     if (!event) {
-      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
-    }
-    if (!event.isActive) {
-      throw new HttpException('Event is not active', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Event not found',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
 
-    // Create reward request through the service
-    return this.rewardRequestService.createRequest(userId, eventId);
+    const meetsConditions = ConditionChecker.checkCondition(
+      event.conditionConfig,
+      userState,
+    );
+    if (!meetsConditions) {
+      throw new HttpException(
+        'User does not meet the event conditions',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const existingRequests =
+      await this.rewardRequestService.findByUserId(userId);
+    const existingRequest = existingRequests.find(
+      (request) => request.eventId === eventId,
+    );
+
+    if (existingRequest) {
+      if (existingRequest.status === REWARD_REQUEST_STATUS.PENDING) {
+        throw new HttpException(
+          'Already a request in progress',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      if (existingRequest.status === REWARD_REQUEST_STATUS.SUCCESS) {
+        throw new HttpException('Already received reward', HttpStatus.CONFLICT);
+      }
+
+      if (existingRequest.status === REWARD_REQUEST_STATUS.FAILED) {
+        return this.rewardRequestService.updateStatus(
+          existingRequest.id,
+          REWARD_REQUEST_STATUS.PENDING,
+        );
+      }
+    }
+
+    // Create new request
+    return this.rewardRequestService.createRequest(userId, eventId, rewardId);
+  }
+
+  async processRewardRequest(
+    requestId: string,
+    success: boolean,
+    options?: {
+      rewardId?: string;
+      failureReason?: string;
+    },
+  ): Promise<RewardRequest> {
+    const request = await this.rewardRequestService.findById(requestId);
+
+    if (request.status !== REWARD_REQUEST_STATUS.PENDING) {
+      throw new HttpException(
+        'Only pending reward requests can be updated',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const newStatus = success
+      ? REWARD_REQUEST_STATUS.SUCCESS
+      : REWARD_REQUEST_STATUS.FAILED;
+
+    return this.rewardRequestService.updateStatus(
+      requestId,
+      newStatus,
+      options,
+    );
   }
 
   async findRewardRequestsByUserId(userId: string): Promise<RewardRequest[]> {
@@ -90,26 +163,5 @@ export class GameEventManagementService {
 
   async findRewardRequestsByEventId(eventId: string): Promise<RewardRequest[]> {
     return this.rewardRequestService.findByEventId(eventId);
-  }
-
-  async claimReward(eventId: string, userId: string): Promise<Reward> {
-    const event = await this.gameEventService.findOne(eventId);
-    if (!event) {
-      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
-    }
-
-    const rewards = await this.rewardService.findByEventId(eventId);
-    if (rewards.length === 0) {
-      throw new HttpException('No rewards available', HttpStatus.NOT_FOUND);
-    }
-
-    // TODO: Implement reward claiming logic
-    // This would typically involve:
-    // 1. Checking if the user is eligible for the reward
-    // 2. Selecting the appropriate reward
-    // 3. Marking the reward as claimed
-    // 4. Returning the claimed reward
-
-    throw new HttpException('Not implemented', HttpStatus.NOT_IMPLEMENTED);
   }
 }

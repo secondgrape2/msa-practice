@@ -9,17 +9,22 @@ import {
   RewardService,
 } from './application/interfaces/reward.interface';
 import { GAME_EVENT_SERVICE } from './application/interfaces/game-event.interface';
-import { GameEventManagementService } from './application/game-event-management.service';
+import {
+  GameEventManagementService,
+  USER_STATE_SERVICE,
+} from './application/game-event-management.service';
 import {
   REWARD_REQUEST_SERVICE,
   RewardRequestService,
 } from './application/interfaces/reward-request.interface';
+import { UserStateService } from './domain/user-state.domain';
 
 describe('GameEventController', () => {
   let controller: GameEventController;
   let mockGameEventService: jest.Mocked<GameEventService>;
   let mockRewardService: jest.Mocked<RewardService>;
   let mockRewardRequestService: jest.Mocked<RewardRequestService>;
+  let mockUserStateService: jest.Mocked<UserStateService>;
   beforeEach(async () => {
     mockGameEventService = {
       create: jest.fn(),
@@ -40,6 +45,10 @@ describe('GameEventController', () => {
       findByEventId: jest.fn(),
     } as any;
 
+    mockUserStateService = {
+      getUserState: jest.fn(),
+    } as any;
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [GameEventController],
       providers: [
@@ -54,6 +63,10 @@ describe('GameEventController', () => {
         {
           provide: REWARD_REQUEST_SERVICE,
           useValue: mockRewardRequestService,
+        },
+        {
+          provide: USER_STATE_SERVICE,
+          useValue: mockUserStateService,
         },
         GameEventManagementService,
       ],
@@ -117,11 +130,11 @@ describe('GameEventController', () => {
     it('should have guards and correct roles for claim reward endpoint', () => {
       const guards = Reflect.getMetadata(
         '__guards__',
-        GameEventController.prototype.claimReward,
+        GameEventController.prototype.requestReward,
       );
       const roles = Reflect.getMetadata(
         'roles',
-        GameEventController.prototype.claimReward,
+        GameEventController.prototype.requestReward,
       );
       expect(guards).toContain(JwtAuthGuard);
       expect(guards).toContain(RolesGuard);

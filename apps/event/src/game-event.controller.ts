@@ -120,24 +120,9 @@ export class GameEventController {
     const request = await this.gameEventManagementService.createRewardRequest(
       user.id,
       createRewardRequestDto.eventId,
+      createRewardRequestDto.rewardId,
     );
     return plainToInstance(RewardRequestResponseDto, request, {
-      excludeExtraneousValues: true,
-    });
-  }
-
-  @Post(':eventId/claim')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(ROLE.USER, ROLE.ADMIN)
-  async claimReward(
-    @Param('eventId') eventId: string,
-    @Body('userId') userId: string,
-  ): Promise<RewardResponseDto> {
-    const reward = await this.gameEventManagementService.claimReward(
-      eventId,
-      userId,
-    );
-    return plainToInstance(RewardResponseDto, reward, {
       excludeExtraneousValues: true,
     });
   }

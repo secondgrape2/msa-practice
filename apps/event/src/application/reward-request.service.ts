@@ -14,28 +14,15 @@ export class RewardRequestServiceImpl implements RewardRequestService {
     private readonly rewardRequestRepository: RewardRequestRepository,
   ) {}
 
-  async createRequest(userId: string, eventId: string): Promise<RewardRequest> {
-    // Check for duplicate requests
-    const existingRequests =
-      await this.rewardRequestRepository.findByUserId(userId);
-    const hasExistingRequest = existingRequests.some(
-      (request) =>
-        request.eventId === eventId &&
-        (request.status === REWARD_REQUEST_STATUS.PENDING ||
-          request.status === REWARD_REQUEST_STATUS.SUCCESS),
-    );
-
-    if (hasExistingRequest) {
-      throw new HttpException(
-        'Reward request already exists for this event',
-        HttpStatus.CONFLICT,
-      );
-    }
-
-    // Create new request
+  async createRequest(
+    userId: string,
+    eventId: string,
+    rewardId: string,
+  ): Promise<RewardRequest> {
     return this.rewardRequestRepository.create({
       userId,
       eventId,
+      rewardId,
       status: REWARD_REQUEST_STATUS.PENDING,
       requestedAt: new Date(),
     });
@@ -47,5 +34,34 @@ export class RewardRequestServiceImpl implements RewardRequestService {
 
   async findByEventId(eventId: string): Promise<RewardRequest[]> {
     return this.rewardRequestRepository.findByEventId(eventId);
+  }
+
+  async findById(id: string): Promise<RewardRequest> {
+    const request = await this.rewardRequestRepository.findById(id);
+    if (!request) {
+      throw new HttpException(
+        '보상 요청을 찾을 수 없습니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return request;
+  }
+
+  async updateStatus(
+    id: string,
+    status: (typeof REWARD_REQUEST_STATUS)[keyof typeof REWARD_REQUEST_STATUS],
+    options?: {
+      rewardId?: string;
+      failureReason?: string;
+    },
+  ): Promise<RewardRequest> {
+    const request = await this.findById(id);
+
+    return this.rewardRequestRepository.update(id, {
+      status,
+      ...(options?.rewardId && { rewardId: options.rewardId }),
+      ...(options?.failureReason && { failureReason: options.failureReason }),
+      completedAt: new Date(),
+    });
   }
 }
