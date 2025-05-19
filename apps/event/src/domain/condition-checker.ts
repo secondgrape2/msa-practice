@@ -88,12 +88,12 @@ export class ConditionChecker {
     userState: UserState,
   ): boolean {
     switch (rule.type) {
-      case 'USER_LEVEL':
+      case 'level':
         if (isLevelParams(rule.params)) {
           return this.checkUserLevel(rule.params, userState);
         }
         return false;
-      case 'LOGIN_STREAK':
+      case 'login_streak':
         if (isLoginStreakParams(rule.params)) {
           return this.checkLoginStreak(rule.params, userState);
         }

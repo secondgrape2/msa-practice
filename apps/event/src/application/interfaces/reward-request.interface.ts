@@ -12,6 +12,7 @@ export interface RewardRequestService {
   findByUserId(userId: string): Promise<RewardRequest[]>;
   findByEventId(eventId: string): Promise<RewardRequest[]>;
   findById(id: string): Promise<RewardRequest>;
+  findAll(): Promise<RewardRequest[]>;
   updateStatus(
     id: string,
     status: (typeof REWARD_REQUEST_STATUS)[keyof typeof REWARD_REQUEST_STATUS],

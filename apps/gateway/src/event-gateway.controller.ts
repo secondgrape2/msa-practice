@@ -8,6 +8,7 @@ import {
   GameEventWithRewardsResponseDto,
 } from '@app/common/event/dto/game-event-response.dto';
 import { CreateGameEventDto } from '@app/common/event/dto/game-event.dto';
+import { RewardRequestResponseDto } from '@app/common/event/dto/reward-request.dto';
 import {
   Body,
   Controller,
@@ -52,6 +53,34 @@ export class EventGatewayController {
   async findEvents(@Req() req: AuthenticatedRequest) {
     return this.gatewayService.proxyToEventService<GameEventResponseDto[]>(
       '/events/v1',
+      'GET',
+      undefined,
+      req.headers.cookie,
+    );
+  }
+
+  @Get('rewards/my-history')
+  @Roles(ROLE.USER, ROLE.ADMIN)
+  @ApiOperation({ summary: "Get user's own reward request history" })
+  @ApiResponse({ status: HttpStatus.OK, type: [RewardRequestResponseDto] })
+  @HttpCode(HttpStatus.OK)
+  async getMyRewardHistory(@Req() req: AuthenticatedRequest) {
+    return this.gatewayService.proxyToEventService<RewardRequestResponseDto[]>(
+      '/events/v1/rewards/my-history',
+      'GET',
+      undefined,
+      req.headers.cookie,
+    );
+  }
+
+  @Get('admin/rewards/request/history')
+  @Roles(ROLE.AUDITOR, ROLE.ADMIN)
+  @ApiOperation({ summary: 'Get all reward request history (Admin only)' })
+  @ApiResponse({ status: HttpStatus.OK, type: [RewardRequestResponseDto] })
+  @HttpCode(HttpStatus.OK)
+  async getRewardHistory(@Req() req: AuthenticatedRequest) {
+    return this.gatewayService.proxyToEventService<RewardRequestResponseDto[]>(
+      '/events/v1/admin/rewards/request/history',
       'GET',
       undefined,
       req.headers.cookie,
