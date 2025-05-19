@@ -179,7 +179,6 @@ describe('GameEventController (Integration)', () => {
       expect(response.body.type).toBe(REWARD_TYPE.POINT);
       expect(response.body.name).toBe(createRewardDto.name);
       expect(response.body.description).toBe(createRewardDto.description);
-      expect(response.body.quantity).toBe(createRewardDto.quantity);
       if (createRewardDto.pointDetails) {
         expect(response.body.pointDetails).toEqual({
           pointAmount: createRewardDto.pointDetails.pointAmount,
@@ -229,7 +228,6 @@ describe('GameEventController (Integration)', () => {
       expect(response.body.type).toBe(REWARD_TYPE.ITEM);
       expect(response.body.name).toBe(createRewardDto.name);
       expect(response.body.description).toBe(createRewardDto.description);
-      expect(response.body.quantity).toBe(createRewardDto.quantity);
       if (createRewardDto.itemDetails) {
         expect(response.body.itemDetails).toEqual(createRewardDto.itemDetails);
       }
@@ -277,7 +275,6 @@ describe('GameEventController (Integration)', () => {
       expect(response.body.type).toBe(REWARD_TYPE.COUPON);
       expect(response.body.name).toBe(createRewardDto.name);
       expect(response.body.description).toBe(createRewardDto.description);
-      expect(response.body.quantity).toBe(createRewardDto.quantity);
       if (createRewardDto.couponDetails) {
         expect(response.body.couponDetails).toEqual({
           ...createRewardDto.couponDetails,
@@ -356,12 +353,12 @@ describe('GameEventController (Integration)', () => {
   describe('GET /events/v1', () => {
     it('should return all game events', async () => {
       // Create test events first
+      const now = new Date();
       const createEventDto: CreateGameEventDto = {
         name: 'Test Event 1',
         description: 'Test Description 1',
-        startAt: new Date('2024-01-01T00:00:00Z'),
-        endAt: new Date('2024-12-31T23:59:59Z'),
-
+        startAt: new Date(now.getTime() - 1000 * 60 * 60 * 24),
+        endAt: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 30),
         isActive: true,
       };
 

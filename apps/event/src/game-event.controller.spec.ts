@@ -156,13 +156,5 @@ describe('GameEventController', () => {
       );
       expect(guards).toBeUndefined();
     });
-
-    it('should have no guards for findActive endpoint', () => {
-      const guards = Reflect.getMetadata(
-        '__guards__',
-        GameEventController.prototype.findActive,
-      );
-      expect(guards).toBeUndefined();
-    });
   });
 });

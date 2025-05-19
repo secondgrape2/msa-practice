@@ -7,8 +7,8 @@ describe('ConditionChecker', () => {
       const config: ConditionConfig = {
         operator: 'AND',
         rules: [
-          { type: 'USER_LEVEL', params: { minLevel: 10 } },
-          { type: 'LOGIN_STREAK', params: { days: 7 } },
+          { type: 'level', params: { minLevel: 10 } },
+          { type: 'login_streak', params: { days: 7 } },
         ],
       };
 
@@ -24,8 +24,8 @@ describe('ConditionChecker', () => {
       const config: ConditionConfig = {
         operator: 'AND',
         rules: [
-          { type: 'USER_LEVEL', params: { minLevel: 10 } },
-          { type: 'LOGIN_STREAK', params: { days: 7 } },
+          { type: 'level', params: { minLevel: 10 } },
+          { type: 'login_streak', params: { days: 7 } },
         ],
       };
 
@@ -41,8 +41,8 @@ describe('ConditionChecker', () => {
       const config: ConditionConfig = {
         operator: 'OR',
         rules: [
-          { type: 'USER_LEVEL', params: { minLevel: 10 } },
-          { type: 'LOGIN_STREAK', params: { days: 7 } },
+          { type: 'level', params: { minLevel: 10 } },
+          { type: 'login_streak', params: { days: 7 } },
         ],
       };
 
@@ -58,8 +58,8 @@ describe('ConditionChecker', () => {
       const config: ConditionConfig = {
         operator: 'OR',
         rules: [
-          { type: 'USER_LEVEL', params: { minLevel: 10 } },
-          { type: 'LOGIN_STREAK', params: { days: 7 } },
+          { type: 'level', params: { minLevel: 10 } },
+          { type: 'login_streak', params: { days: 7 } },
         ],
       };
 
@@ -89,8 +89,8 @@ describe('ConditionChecker', () => {
       const config: ConditionConfig = {
         operator: 'AND',
         rules: [
-          { type: 'USER_LEVEL', params: { minLevel: 10 } },
-          { type: 'LOGIN_STREAK', params: { days: 7 } },
+          { type: 'level', params: { minLevel: 10 } },
+          { type: 'login_streak', params: { days: 7 } },
         ],
       };
 

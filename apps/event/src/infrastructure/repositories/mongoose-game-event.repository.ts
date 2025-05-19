@@ -8,8 +8,10 @@ import {
 } from '../../schemas/game-event.schema';
 import { GameEventRepository } from './game-event.repository.interface';
 import { GameEvent } from '../../domain/game-event.domain';
+import { HandleMongoClassErrors } from '@app/common/decorators/mongo-error-class.decorator';
 
 @Injectable()
+@HandleMongoClassErrors()
 export class MongooseGameEventRepository implements GameEventRepository {
   constructor(
     @InjectModel(GameEventEntity.name)
