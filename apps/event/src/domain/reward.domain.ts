@@ -1,4 +1,4 @@
-import { RewardType } from '@app/common/constants/reward.constants';
+import { RewardType } from '@app/common/event/interfaces/reward.interface';
 
 /**
  * Represents the details for a point-based reward

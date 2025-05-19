@@ -1,5 +1,5 @@
 import { Reward } from '../../domain/reward.domain';
-import { CreateRewardDto } from '@app/common/dto/reward.dto';
+import { CreateRewardDto } from '@app/common/event/dto/reward.dto';
 
 /**
  * @description Service interface for managing rewards.

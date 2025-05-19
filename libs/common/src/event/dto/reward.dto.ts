@@ -5,7 +5,10 @@ import {
   IsEnum,
   IsOptional,
 } from 'class-validator';
-import { REWARD_TYPE, RewardType } from '../constants/reward.constants';
+import {
+  REWARD_TYPE,
+  RewardType,
+} from '@app/common/event/interfaces/reward.interface';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateRewardDto {
