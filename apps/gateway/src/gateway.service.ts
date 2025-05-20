@@ -7,6 +7,8 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'; 
 import { ConfigService } from '@nestjs/config';
 import { EnvironmentVariables } from './config';
 import { AxiosError } from 'axios'; // AxiosError 타입 import
+import { BaseHttpException } from '@app/common';
+import { CommonErrorCodes } from '@app/common/constants/error-codes.enum';
 
 interface ProxyResponse<T> {
   data: T;
@@ -56,26 +58,52 @@ export class GatewayService {
     if (error.isAxiosError) {
       const axiosError = error as AxiosError;
       if (axiosError.response) {
-        const message =
-          (axiosError.response.data as ErrorResponse)?.message ||
-          axiosError.response.data ||
-          'Error from downstream service';
-        throw new HttpException(message, axiosError.response.status);
+        const responseData = axiosError.response.data as Record<
+          string,
+          unknown
+        >;
+
+        if (responseData && typeof responseData === 'object') {
+          if ('message' in responseData && 'code' in responseData) {
+            throw new BaseHttpException(
+              String(responseData.message),
+              axiosError.response.status,
+              String(responseData.code),
+            );
+          }
+
+          throw new HttpException(
+            {
+              message: String(responseData?.message || 'An error occurred'),
+              code: CommonErrorCodes.UnknownError,
+            },
+            axiosError.response.status,
+          );
+        }
       } else if (axiosError.request) {
         throw new HttpException(
-          `No response from ${serviceName}`,
-          HttpStatus.SERVICE_UNAVAILABLE, // 또는 BAD_GATEWAY
+          {
+            message: `No response from ${serviceName}`,
+            code: CommonErrorCodes.ServiceUnavailable,
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
         );
       } else {
         throw new HttpException(
-          `Error setting up request to ${serviceName}: ${axiosError.message}`,
+          {
+            message: `Error setting up request to ${serviceName}: ${axiosError.message}`,
+            code: CommonErrorCodes.InternalServerError,
+          },
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
     }
 
     throw new HttpException(
-      'An unexpected error occurred in the gateway',
+      {
+        message: 'An unexpected error occurred in the gateway',
+        code: CommonErrorCodes.InternalServerError,
+      },
       HttpStatus.INTERNAL_SERVER_ERROR,
     );
   }

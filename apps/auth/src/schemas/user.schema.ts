@@ -2,15 +2,17 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { ROLE, Role } from '@app/common/auth-core/constants/role.constants';
 import { User } from '../interfaces/auth.interface';
+import { Index } from '@typegoose/typegoose';
 
 export type UserDocument = UserEntity & Document;
 
 const USER_COLLECTION_NAME = 'users';
+@Index({ email: 1 }, { unique: true })
 @Schema({ timestamps: true, collection: USER_COLLECTION_NAME })
 export class UserEntity {
   _id: Types.ObjectId;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   email: string;
 
   @Prop({ required: true })

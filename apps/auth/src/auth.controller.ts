@@ -26,6 +26,7 @@ import {
 import { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from '@app/common/auth-core/guards/jwt-auth.guard';
+import { InvalidRefreshTokenException } from './exceptions/auth.exceptions';
 
 @ApiTags('auth')
 @Controller('auth/v1')
@@ -78,7 +79,7 @@ export class AuthController {
   async refresh(@Req() req: Request) {
     const refresh_token = req.cookies?.[COOKIE_NAMES.refreshToken];
     if (!refresh_token) {
-      throw new UnauthorizedException('Refresh token not found');
+      throw new InvalidRefreshTokenException();
     }
 
     const { accessToken, user } =

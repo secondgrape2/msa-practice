@@ -14,8 +14,12 @@ const config: Config = {
   testEnvironment: 'node',
   moduleNameMapper: {
     '^@app/common/(.*)$': '<rootDir>/libs/common/src/$1',
+    '^@app/common$': '<rootDir>/libs/common/src',
+    '^@app/(.*)$': '<rootDir>/libs/$1',
   },
-  modulePaths: ['<rootDir>/apps/auth/src'],
+  modulePaths: ['<rootDir>'],
+  testPathIgnorePatterns: ['jest.config.ts'],
+  workerIdleMemoryLimit: '500MB',
 };
 
 export default config;

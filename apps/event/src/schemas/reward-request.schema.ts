@@ -6,21 +6,24 @@ import {
   REWARD_REQUEST_STATUS,
   RewardRequestStatus,
 } from '../domain/reward.domain';
+import mongoose from 'mongoose';
 
 const REWARD_REQUEST_COLLECTION_NAME = 'reward.requests';
 @Schema({ timestamps: true, collection: REWARD_REQUEST_COLLECTION_NAME })
 @Index({ userId: 1, eventId: 1, rewardId: 1 }, { unique: true })
+@Index({ userId: 1, requestedAt: 1 })
+@Index({ userId: 1, completedAt: 1 })
 export class RewardRequestEntity {
-  _id: Types.ObjectId;
+  _id: mongoose.Types.ObjectId;
 
-  @Prop({ required: true, type: Types.ObjectId })
-  userId: Types.ObjectId;
+  @Prop({ required: true, type: mongoose.Types.ObjectId })
+  userId: mongoose.Types.ObjectId;
 
-  @Prop({ required: true, type: Types.ObjectId })
-  eventId: Types.ObjectId;
+  @Prop({ required: true, type: mongoose.Types.ObjectId })
+  eventId: mongoose.Types.ObjectId;
 
-  @Prop({ required: true, type: Types.ObjectId })
-  rewardId: Types.ObjectId;
+  @Prop({ required: true, type: mongoose.Types.ObjectId })
+  rewardId: mongoose.Types.ObjectId;
 
   @Prop({
     type: String,

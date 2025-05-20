@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import {
   IsString,
   IsEnum,
@@ -25,6 +25,7 @@ export class PointRewardDetailsDto {
   })
   @IsNumber()
   @Min(0)
+  @Expose()
   pointAmount: number;
 
   @ApiProperty({
@@ -35,6 +36,7 @@ export class PointRewardDetailsDto {
   @IsOptional()
   @IsDate()
   @Type(() => Date)
+  @Expose()
   expiryDate?: Date;
 }
 
@@ -47,6 +49,7 @@ export class ItemRewardDetailsDto {
     example: 'item_123',
   })
   @IsString()
+  @Expose()
   itemId: string;
 
   @ApiProperty({
@@ -54,6 +57,7 @@ export class ItemRewardDetailsDto {
     example: 'Premium Sword',
   })
   @IsString()
+  @Expose()
   itemName: string;
 
   @ApiProperty({
@@ -63,6 +67,7 @@ export class ItemRewardDetailsDto {
   })
   @IsNumber()
   @Min(1)
+  @Expose()
   itemQuantity: number;
 }
 
@@ -75,6 +80,7 @@ export class CouponRewardDetailsDto {
     example: 'SUMMER2024',
   })
   @IsString()
+  @Expose()
   couponCode: string;
 
   @ApiProperty({
@@ -84,6 +90,7 @@ export class CouponRewardDetailsDto {
   })
   @IsNumber()
   @Min(0)
+  @Expose()
   discountAmount: number;
 
   @ApiProperty({
@@ -92,6 +99,7 @@ export class CouponRewardDetailsDto {
     example: 'percentage',
   })
   @IsEnum(['percentage', 'fixed'])
+  @Expose()
   discountType: 'percentage' | 'fixed';
 
   @ApiProperty({
@@ -102,6 +110,7 @@ export class CouponRewardDetailsDto {
   @IsOptional()
   @IsDate()
   @Type(() => Date)
+  @Expose()
   expiryDate?: Date;
 }
 
@@ -114,6 +123,7 @@ export class RewardTypeDto {
     example: 'point',
   })
   @IsString()
+  @Expose()
   type: string;
 }
 
@@ -126,6 +136,7 @@ export class ConditionTypeDto {
     example: 'level',
   })
   @IsString()
+  @Expose()
   type: string;
 }
 
@@ -140,6 +151,7 @@ export class CreateRewardDto {
   })
   @IsEnum(['point', 'item', 'coupon'])
   @IsNotEmpty()
+  @Expose()
   type: 'point' | 'item' | 'coupon';
 
   @ApiProperty({
@@ -148,6 +160,7 @@ export class CreateRewardDto {
   })
   @IsString()
   @IsNotEmpty()
+  @Expose()
   name: string;
 
   @ApiProperty({
@@ -157,17 +170,8 @@ export class CreateRewardDto {
   })
   @IsOptional()
   @IsString()
+  @Expose()
   description?: string;
-
-  @ApiProperty({
-    description: 'Total quantity of rewards available',
-    example: 1000,
-    minimum: 1,
-  })
-  @IsNumber()
-  @Min(1)
-  @IsNotEmpty()
-  quantity: number;
 
   @ApiProperty({
     description: 'Details for point type reward',
@@ -177,6 +181,7 @@ export class CreateRewardDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => PointRewardDetailsDto)
+  @Expose()
   pointDetails?: PointRewardDetailsDto;
 
   @ApiProperty({
@@ -187,6 +192,7 @@ export class CreateRewardDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => ItemRewardDetailsDto)
+  @Expose()
   itemDetails?: ItemRewardDetailsDto;
 
   @ApiProperty({
@@ -197,6 +203,7 @@ export class CreateRewardDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => CouponRewardDetailsDto)
+  @Expose()
   couponDetails?: CouponRewardDetailsDto;
 
   @ApiProperty({
@@ -205,6 +212,7 @@ export class CreateRewardDto {
     example: 'level',
   })
   @IsEnum(['level', 'login_streak'])
+  @Expose()
   conditionType: 'level' | 'login_streak';
 
   @ApiProperty({
@@ -213,6 +221,7 @@ export class CreateRewardDto {
   })
   @ValidateNested()
   @Type(() => ConditionConfigDto)
+  @Expose()
   conditionConfig: ConditionConfigDto;
 
   @ApiProperty({
@@ -221,5 +230,6 @@ export class CreateRewardDto {
   })
   @IsString()
   @IsNotEmpty()
+  @Expose()
   conditionsDescription: string;
 }

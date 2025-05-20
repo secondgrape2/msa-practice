@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -21,6 +21,7 @@ export class ConditionParamsDto {
   })
   @IsOptional()
   @IsNumber()
+  @Expose()
   days?: number;
 
   @ApiPropertyOptional({
@@ -30,6 +31,7 @@ export class ConditionParamsDto {
   })
   @IsOptional()
   @IsNumber()
+  @Expose()
   minLevel?: number;
 
   [key: string]: unknown;
@@ -44,6 +46,7 @@ export class BaseConditionRuleDto {
     example: 'login_streak',
   })
   @IsString()
+  @Expose()
   type: string;
 
   @ApiProperty({
@@ -51,6 +54,7 @@ export class BaseConditionRuleDto {
     type: ConditionParamsDto,
   })
   @IsObject()
+  @Expose()
   params: ConditionParamsDto;
 }
 
@@ -86,6 +90,7 @@ export class ConditionConfigDto {
     example: 'AND',
   })
   @IsEnum(['AND', 'OR'])
+  @Expose()
   operator: 'AND' | 'OR';
 
   @ApiProperty({
@@ -95,5 +100,6 @@ export class ConditionConfigDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => BaseConditionRuleDto)
+  @Expose()
   rules: BaseConditionRuleDto[];
 }

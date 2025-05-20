@@ -10,6 +10,11 @@ import {
   SwaggerModule,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import {
+  ErrorFilter,
+  HttpExceptionFilter,
+  BaseExceptionFilter,
+} from '@app/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -56,6 +61,13 @@ async function bootstrap() {
       },
     });
   }
+
+  app.useGlobalFilters(
+    new ErrorFilter(),
+    new HttpExceptionFilter(),
+    new BaseExceptionFilter(),
+  );
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

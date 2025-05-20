@@ -11,11 +11,12 @@ import {
   RewardType,
 } from '../domain/reward.domain';
 import { ConditionConfig } from '../domain/game-event.domain';
+import { Index } from '@typegoose/typegoose';
 
 export type RewardDocument = RewardEntity & Document;
 
 const REWARD_COLLECTION_NAME = 'rewards';
-
+@Index({ eventId: 1 })
 @Schema({ timestamps: true, collection: REWARD_COLLECTION_NAME })
 export class RewardEntity {
   _id: Types.ObjectId;

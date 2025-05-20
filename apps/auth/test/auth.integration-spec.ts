@@ -87,7 +87,7 @@ describe('AuthController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/auth/v1/signup/email')
         .send(signUpDto)
-        .expect(401)
+        .expect(409)
         .expect((res: Response) => {
           expect(res.body.message).toBe('User already exists');
         });

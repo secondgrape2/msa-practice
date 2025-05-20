@@ -152,7 +152,6 @@ describe('GameEventController (Integration)', () => {
         type: REWARD_TYPE.POINT,
         name: 'Login Bonus',
         description: 'Daily login bonus',
-        quantity: 1,
         pointDetails: {
           pointAmount: 1000,
           expiryDate: new Date('2024-12-31T23:59:59Z'),
@@ -199,7 +198,6 @@ describe('GameEventController (Integration)', () => {
         type: REWARD_TYPE.ITEM,
         name: 'Premium Sword',
         description: 'Legendary sword for warriors',
-        quantity: 1,
         itemDetails: {
           itemId: 'sword_001',
           itemName: 'Premium Sword',
@@ -245,7 +243,6 @@ describe('GameEventController (Integration)', () => {
         type: REWARD_TYPE.COUPON,
         name: 'Summer Discount',
         description: '20% off on all items',
-        quantity: 1,
         couponDetails: {
           couponCode: 'SUMMER2024',
           discountAmount: 20,
@@ -295,7 +292,6 @@ describe('GameEventController (Integration)', () => {
         type: REWARD_TYPE.POINT,
         name: 'Login Bonus',
         description: 'Daily login bonus',
-        quantity: 1,
         pointDetails: {
           pointAmount: 1000,
         },
@@ -325,7 +321,6 @@ describe('GameEventController (Integration)', () => {
         type: REWARD_TYPE.POINT,
         name: 'Login Bonus',
         description: 'Daily login bonus',
-        quantity: 1,
         pointDetails: {
           pointAmount: 1000,
         },
@@ -453,7 +448,6 @@ describe('GameEventController (Integration)', () => {
         type: REWARD_TYPE.POINT,
         name: 'Test Reward',
         description: 'Test Reward Description',
-        quantity: 1,
         pointDetails: {
           pointAmount: 1000,
         },
@@ -549,7 +543,6 @@ describe('GameEventController (Integration)', () => {
         type: REWARD_TYPE.POINT,
         name: 'Test Reward',
         description: 'Test Reward Description',
-        quantity: 1,
         pointDetails: {
           pointAmount: 1000,
         },

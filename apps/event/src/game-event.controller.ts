@@ -71,6 +71,7 @@ export class GameEventController {
       eventId,
       createRewardDto,
     );
+
     return plainToInstance(RewardResponseDto, reward, {
       excludeExtraneousValues: true,
     });
