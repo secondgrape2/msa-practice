@@ -21,7 +21,6 @@ erDiagram
         string type
         string name
         string description
-        number quantity
         object pointDetails
         object itemDetails
         object couponDetails
@@ -65,7 +64,6 @@ Event와 Reward의 관계를 1:N(일대다)으로 설계한 이유는 다음과 
 - `type`: 보상 유형 (enum: 'point', 'item', 'coupon')
 - `name`: 보상 이름
 - `description`: 선택적 상세 설명
-- `quantity`: 획득 가능한 횟수
 - `pointDetails`: 포인트 보상 상세 정보
   ```typescript
   {
