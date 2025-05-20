@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import {
   RewardRequestEntity,
   RewardRequestDocument,
@@ -74,7 +74,10 @@ export class MongooseRewardRequestRepository
     userId: string,
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>> {
-    return this.findWithPagination({ userId }, options);
+    return this.findWithPagination(
+      { userId: new Types.ObjectId(userId) },
+      options,
+    );
   }
 
   async findByEventId(eventId: string): Promise<RewardRequest[]> {

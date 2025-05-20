@@ -1,4 +1,10 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import {
+  Index,
+  ModelOptions,
+  Prop,
+  Severity,
+  buildSchema,
+} from '@typegoose/typegoose';
 import { Document, Types } from 'mongoose';
 import {
   CONDITION_TYPE,
@@ -11,13 +17,22 @@ import {
   RewardType,
 } from '../domain/reward.domain';
 import { ConditionConfig } from '../domain/game-event.domain';
-import { Index } from '@typegoose/typegoose';
 
 export type RewardDocument = RewardEntity & Document;
 
 const REWARD_COLLECTION_NAME = 'rewards';
 @Index({ eventId: 1 })
-@Schema({ timestamps: true, collection: REWARD_COLLECTION_NAME })
+@ModelOptions({
+  options: { allowMixed: Severity.ALLOW },
+  schemaOptions: {
+    collection: REWARD_COLLECTION_NAME,
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      getters: true,
+    },
+  },
+})
 export class RewardEntity {
   _id: Types.ObjectId;
 
@@ -63,7 +78,7 @@ export class RewardEntity {
   updatedAt: Date;
 }
 
-export const RewardSchema = SchemaFactory.createForClass(RewardEntity);
+export const RewardSchema = buildSchema(RewardEntity);
 
 export const toRewardDomain = (doc: RewardDocument): Reward => ({
   id: doc._id.toString(),

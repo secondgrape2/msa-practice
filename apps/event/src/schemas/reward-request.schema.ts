@@ -1,18 +1,26 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Index, ModelOptions, Prop, buildSchema } from '@typegoose/typegoose';
+import mongoose, { Document } from 'mongoose';
 import { RewardRequest } from '../domain/reward-request.domain';
-import { Index } from '@typegoose/typegoose';
 import {
   REWARD_REQUEST_STATUS,
   RewardRequestStatus,
 } from '../domain/reward.domain';
-import mongoose from 'mongoose';
 
 const REWARD_REQUEST_COLLECTION_NAME = 'reward.requests';
-@Schema({ timestamps: true, collection: REWARD_REQUEST_COLLECTION_NAME })
+
 @Index({ userId: 1, eventId: 1, rewardId: 1 }, { unique: true })
 @Index({ userId: 1, requestedAt: 1 })
 @Index({ userId: 1, completedAt: 1 })
+@ModelOptions({
+  schemaOptions: {
+    collection: REWARD_REQUEST_COLLECTION_NAME,
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      getters: true,
+    },
+  },
+})
 export class RewardRequestEntity {
   _id: mongoose.Types.ObjectId;
 
@@ -50,8 +58,7 @@ export class RewardRequestEntity {
 }
 
 export type RewardRequestDocument = RewardRequestEntity & Document;
-export const RewardRequestSchema =
-  SchemaFactory.createForClass(RewardRequestEntity);
+export const RewardRequestSchema = buildSchema(RewardRequestEntity);
 
 export const toRewardRequestDomain = (
   doc: RewardRequestDocument,
