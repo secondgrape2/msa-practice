@@ -14,6 +14,7 @@ import { CreateRewardDto } from '@app/common/event/dto/reward.dto';
 import {
   CreateRewardRequestDto,
   RewardRequestResponseDto,
+  RewardRequestFilterDto,
 } from '@app/common/event/dto/reward-request.dto';
 import {
   Body,
@@ -115,12 +116,15 @@ export class GameEventController {
   @Roles(ROLE.USER, ROLE.ADMIN)
   async getMyRewardHistory(
     @ReqUser() user: AuthenticatedUser,
-    @Query() paginationDto: PaginationDto,
+    @Query() query: RewardRequestFilterDto,
   ): Promise<PaginatedResponse<RewardRequestResponseDto>> {
-    const { page = 1, limit = 10 } = paginationDto;
+    const { page = 1, limit = 10 } = query;
     const { items, total } =
       await this.gameEventManagementService.findRewardRequestsByUserId(
-        user.id,
+        {
+          userId: user.id,
+          status: query.status,
+        },
         {
           page,
           limit,
@@ -142,14 +146,19 @@ export class GameEventController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE.AUDITOR, ROLE.ADMIN)
   async getRewardHistory(
-    @Query() paginationDto: PaginationDto,
+    @Query() query: RewardRequestFilterDto,
   ): Promise<PaginatedResponse<RewardRequestResponseDto>> {
-    const { page = 1, limit = 10 } = paginationDto;
+    const { page = 1, limit = 10 } = query;
     const { items, total } =
-      await this.gameEventManagementService.findAllRewardRequests({
-        page,
-        limit,
-      });
+      await this.gameEventManagementService.findAllRewardRequests(
+        {
+          status: query.status,
+        },
+        {
+          page,
+          limit,
+        },
+      );
 
     return {
       items: plainToInstance(RewardRequestResponseDto, items, {

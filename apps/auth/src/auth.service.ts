@@ -25,6 +25,7 @@ export class AuthServiceImpl implements AuthService {
   ) {}
 
   async signUp(signUpDto: SignUpDto): Promise<User> {
+    await AuthActions.validatePasswordFormat(signUpDto.password);
     const { email, password } = signUpDto;
     const existingUser = await this.userRepository.findByEmail(email);
     AuthActions.validateUniqueUser(existingUser);
@@ -39,6 +40,7 @@ export class AuthServiceImpl implements AuthService {
     refreshToken: string;
     user: User;
   }> {
+    await AuthActions.validatePasswordFormat(signInDto.password);
     const user = await this.userRepository.findByEmail(signInDto.email);
     const validatedUser = AuthActions.validateUserCredentials(
       user,

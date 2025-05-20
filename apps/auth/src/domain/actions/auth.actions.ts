@@ -6,11 +6,20 @@ import {
 } from '../../interfaces/auth.interface';
 import {
   InvalidCredentialsException,
+  InvalidPasswordFormatException,
   InvalidRefreshTokenException,
   UserAlreadyExistsException,
 } from '../../exceptions/auth.exceptions';
 
 export class AuthActions {
+  static async validatePasswordFormat(password: string): Promise<void> {
+    const validPasswordRegex =
+      /^(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,64}$/;
+    if (!password.match(validPasswordRegex)) {
+      throw new InvalidPasswordFormatException();
+    }
+  }
+
   static async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
   }

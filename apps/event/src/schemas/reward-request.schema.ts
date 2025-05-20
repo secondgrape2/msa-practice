@@ -6,7 +6,7 @@ import {
   RewardRequestStatus,
 } from '../domain/reward.domain';
 
-const REWARD_REQUEST_COLLECTION_NAME = 'reward.requests';
+export const REWARD_REQUEST_COLLECTION_NAME = 'reward.requests';
 
 @Index({ userId: 1, eventId: 1, rewardId: 1 }, { unique: true })
 @Index({ userId: 1, requestedAt: 1 })

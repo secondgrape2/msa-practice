@@ -5,6 +5,7 @@ import {
   InvalidRefreshTokenException,
   InvalidCredentialsException,
   UserAlreadyExistsException,
+  InvalidPasswordFormatException,
 } from '../../exceptions/auth.exceptions';
 
 describe('AuthActions', () => {
@@ -124,6 +125,51 @@ describe('AuthActions', () => {
         hashedPassword,
       );
       expect(result).toBe(false);
+    });
+  });
+
+  describe('validatePasswordFormat', () => {
+    it('should not throw for valid password format', async () => {
+      const validPasswords = [
+        'Password123!',
+        'Test1234@',
+        'Abc12345#',
+        'ValidPass1$',
+      ];
+
+      for (const password of validPasswords) {
+        await expect(
+          AuthActions.validatePasswordFormat(password),
+        ).resolves.not.toThrow();
+      }
+    });
+
+    it('should throw for password without special character', async () => {
+      const invalidPassword = 'Password123';
+      await expect(
+        AuthActions.validatePasswordFormat(invalidPassword),
+      ).rejects.toThrow(InvalidPasswordFormatException);
+    });
+
+    it('should throw for password without letter', async () => {
+      const invalidPassword = '12345678!';
+      await expect(
+        AuthActions.validatePasswordFormat(invalidPassword),
+      ).rejects.toThrow(InvalidPasswordFormatException);
+    });
+
+    it('should throw for password shorter than 8 characters', async () => {
+      const invalidPassword = 'Pass1!';
+      await expect(
+        AuthActions.validatePasswordFormat(invalidPassword),
+      ).rejects.toThrow(InvalidPasswordFormatException);
+    });
+
+    it('should throw for password longer than 64 characters', async () => {
+      const invalidPassword = 'P'.repeat(65) + '1!';
+      await expect(
+        AuthActions.validatePasswordFormat(invalidPassword),
+      ).rejects.toThrow(InvalidPasswordFormatException);
     });
   });
 });

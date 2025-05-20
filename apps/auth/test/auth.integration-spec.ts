@@ -60,7 +60,7 @@ describe('AuthController (e2e)', () => {
   describe('POST /auth/v1/signup/email', () => {
     const signUpDto = {
       email: 'test@example.com',
-      password: 'password123',
+      password: 'Password123!',
     };
 
     it('should create a new user', () => {
@@ -97,7 +97,7 @@ describe('AuthController (e2e)', () => {
   describe('POST /auth/signin', () => {
     const signUpDto = {
       email: `test${nanoid()}@example.com`,
-      password: 'password123',
+      password: 'Password123!',
     };
 
     beforeEach(async () => {
@@ -126,7 +126,7 @@ describe('AuthController (e2e)', () => {
         .post('/auth/v1/signin/email')
         .send({
           email: signUpDto.email,
-          password: 'wrongpassword',
+          password: 'wrongpassword!!',
         })
         .expect(401)
         .expect((res: Response) => {
@@ -135,62 +135,6 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  // describe('POST /auth/refresh', () => {
-  //   const signUpDto = {
-  //     email: `test${nanoid()}@example.com`,
-  //     password: 'password123',
-  //   };
-
-  //   let refreshToken: string;
-
-  //   beforeEach(async () => {
-  //     await request(app.getHttpServer())
-  //       .post('/auth/signup/email')
-  //       .send(signUpDto)
-  //       .expect(201);
-
-  //     const signInResponse = await request(app.getHttpServer())
-  //       .post('/auth/signin')
-  //       .send(signUpDto)
-  //       .expect(200);
-  //     const cookie = signInResponse.headers['set-cookie'];
-  //     if (cookie) {
-  //       // Parse the refresh_token from the cookie array
-  //       // The cookie is an array of strings, find the one containing refresh_token
-  //       const refreshCookie = Array.isArray(cookie)
-  //         ? cookie.find((c: string) => c.includes('refresh_token='))
-  //         : null;
-  //       // Extract the token value from the cookie string
-  //       refreshToken = refreshCookie
-  //         ? refreshCookie.split(';')[0].split('=')[1]
-  //         : '';
-  //     }
-  //   });
-
-  //   it('should refresh token with valid refresh token', () => {
-  //     console.log(
-  //       `refreshTokenrefreshTokenrefreshTokenrefreshTokenrefreshToken: ${refreshToken}`,
-  //     );
-  //     return request(app.getHttpServer())
-  //       .post('/auth/refresh')
-  //       .set('Cookie', [`refresh_token=${refreshToken}`])
-  //       .expect(200)
-  //       .expect((res: Response) => {
-  //         expect(res.body.token).toHaveProperty('jwt');
-  //         expect(res.headers['set-cookie']).toBeDefined();
-  //       });
-  //   });
-
-  //   it('should not refresh token without refresh token', () => {
-  //     return request(app.getHttpServer())
-  //       .post('/auth/refresh')
-  //       .expect(401)
-  //       .expect((res: Response) => {
-  //         expect(res.body.message).toBe('Refresh token not found');
-  //       });
-  //   });
-  // });
-
   describe('POST /auth/v1/logout', () => {
     it('should logout successfully', async () => {
       // 1. 먼저 회원가입
@@ -198,7 +142,7 @@ describe('AuthController (e2e)', () => {
         .post('/auth/v1/signup/email')
         .send({
           email: 'test@example.com',
-          password: 'password123',
+          password: 'Password123!',
         })
         .expect(201);
 

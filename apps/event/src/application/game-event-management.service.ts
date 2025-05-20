@@ -3,7 +3,11 @@ import { CreateRewardDto } from '@app/common/event/dto/reward.dto';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameEvent } from '../domain/game-event.domain';
 import { RewardRequest } from '../domain/reward-request.domain';
-import { Reward, REWARD_REQUEST_STATUS } from '../domain/reward.domain';
+import {
+  Reward,
+  REWARD_REQUEST_STATUS,
+  RewardRequestStatus,
+} from '../domain/reward.domain';
 import { ConditionChecker } from '../domain/condition-checker';
 import { UserStateService } from '../domain/user-state.domain';
 import {
@@ -170,11 +174,14 @@ export class GameEventManagementService {
   }
 
   async findRewardRequestsByUserId(
-    userId: string,
+    filter: {
+      userId: string;
+      status?: RewardRequestStatus;
+    },
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>> {
     return this.rewardRequestService.findByUserIdWithPagination(
-      userId,
+      filter,
       options,
     );
   }
@@ -184,8 +191,11 @@ export class GameEventManagementService {
   }
 
   async findAllRewardRequests(
+    filter: {
+      status?: RewardRequestStatus;
+    },
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>> {
-    return this.rewardRequestService.findAll(options);
+    return this.rewardRequestService.findAll(filter, options);
   }
 }
