@@ -3,7 +3,10 @@ import {
   PaginationResult,
 } from '@app/common/interfaces/pagination.interface';
 import { RewardRequest } from '../../domain/reward-request.domain';
-import { REWARD_REQUEST_STATUS } from '../../domain/reward.domain';
+import {
+  REWARD_REQUEST_STATUS,
+  RewardRequestStatus,
+} from '../../domain/reward.domain';
 
 export const REWARD_REQUEST_SERVICE = 'REWARD_REQUEST_SERVICE';
 
@@ -15,12 +18,18 @@ export interface RewardRequestService {
   ): Promise<RewardRequest>;
   findByUserId(userId: string): Promise<RewardRequest[]>;
   findByUserIdWithPagination(
-    userId: string,
+    filter: {
+      userId: string;
+      status?: RewardRequestStatus;
+    },
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>>;
   findByEventId(eventId: string): Promise<RewardRequest[]>;
   findById(id: string): Promise<RewardRequest>;
   findAll(
+    filter: {
+      status?: RewardRequestStatus;
+    },
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>>;
   updateStatus(

@@ -6,6 +6,7 @@ export enum CommonErrorCodes {
   UserInvalidPassword = 1001,
   UserAlreadyExists = 1002,
   InvalidRefreshToken = 1003,
+  InvalidPasswordFormat = 1004,
 
   /**
    * Event related errors (1100 - 1199)

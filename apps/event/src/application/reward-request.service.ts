@@ -5,7 +5,10 @@ import {
   RewardRequestRepository,
 } from '../domain/reward-request.domain';
 import { RewardRequestService } from './interfaces/reward-request.interface';
-import { REWARD_REQUEST_STATUS } from '../domain/reward.domain';
+import {
+  REWARD_REQUEST_STATUS,
+  RewardRequestStatus,
+} from '../domain/reward.domain';
 import {
   PaginationOptions,
   PaginationResult,
@@ -37,11 +40,14 @@ export class RewardRequestServiceImpl implements RewardRequestService {
   }
 
   async findByUserIdWithPagination(
-    userId: string,
+    filter: {
+      userId: string;
+      status?: RewardRequestStatus;
+    },
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>> {
     return this.rewardRequestRepository.findByUserIdWithPagination(
-      userId,
+      filter,
       options,
     );
   }
@@ -62,9 +68,12 @@ export class RewardRequestServiceImpl implements RewardRequestService {
   }
 
   async findAll(
+    filter: {
+      status?: RewardRequestStatus;
+    },
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>> {
-    return this.rewardRequestRepository.findAll(options);
+    return this.rewardRequestRepository.findAll(filter, options);
   }
 
   async updateStatus(

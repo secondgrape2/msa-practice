@@ -1,6 +1,7 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { PaginationDto } from '../../dto/pagination.dto';
 
 export class CreateRewardRequestDto {
   @ApiProperty({
@@ -64,4 +65,16 @@ export class RewardRequestResponseDto {
   })
   @Expose()
   requestedAt: Date;
+}
+
+export class RewardRequestFilterDto extends PaginationDto {
+  @ApiProperty({
+    description: 'Filter by request status',
+    enum: ['pending', 'success', 'failed', 'claimed'],
+    example: 'pending',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  status?: 'pending' | 'success' | 'failed' | 'claimed';
 }

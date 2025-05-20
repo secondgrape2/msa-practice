@@ -15,6 +15,7 @@ import {
   PaginationOptions,
   PaginationResult,
 } from '@app/common/interfaces/pagination.interface';
+import { RewardRequestStatus } from '../../domain/reward.domain';
 
 @Injectable()
 @HandleMongoClassErrors()
@@ -32,9 +33,12 @@ export class MongooseRewardRequestRepository
   }
 
   async findAll(
+    filter: {
+      status?: RewardRequestStatus;
+    },
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>> {
-    return this.findWithPagination({}, options);
+    return this.findWithPagination(filter, options);
   }
 
   async findById(id: string): Promise<RewardRequest | null> {
@@ -42,15 +46,26 @@ export class MongooseRewardRequestRepository
     return rewardRequest ? toRewardRequestDomain(rewardRequest) : null;
   }
 
+  private async filterUndefined(
+    filter: FilterQuery<RewardRequest>,
+  ): Promise<FilterQuery<RewardRequest>> {
+    return Object.fromEntries(
+      Object.entries(filter).filter(
+        ([_, value]) => value !== undefined && value !== null,
+      ),
+    );
+  }
+
   private async findWithPagination(
     filter: FilterQuery<RewardRequest>,
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>> {
+    const filteredFilter = await this.filterUndefined(filter);
     const { page = 1, limit = 10 } = options ?? {};
     const skip = (page - 1) * limit;
     const rewardRequests = await this.rewardRequestModel.aggregate([
       {
-        $match: filter,
+        $match: filteredFilter,
       },
       {
         $limit: limit,
@@ -59,7 +74,9 @@ export class MongooseRewardRequestRepository
         $skip: skip,
       },
     ]);
-    const total = await this.rewardRequestModel.countDocuments(filter).exec();
+    const total = await this.rewardRequestModel
+      .countDocuments(filteredFilter)
+      .exec();
     return { items: rewardRequests.map(toRewardRequestDomain), total };
   }
 
@@ -71,11 +88,18 @@ export class MongooseRewardRequestRepository
   }
 
   async findByUserIdWithPagination(
-    userId: string,
+    filter: {
+      userId: string;
+      status?: RewardRequestStatus;
+    },
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>> {
+    const { userId, status } = filter;
     return this.findWithPagination(
-      { userId: new Types.ObjectId(userId) },
+      {
+        userId: new Types.ObjectId(userId),
+        status,
+      },
       options,
     );
   }

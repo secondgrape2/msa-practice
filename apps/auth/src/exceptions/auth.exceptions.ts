@@ -2,6 +2,15 @@ import { HttpStatus } from '@nestjs/common';
 import { BaseHttpException } from '@app/common';
 import { CommonErrorCodes } from '@app/common/constants/error-codes.enum';
 
+export class InvalidPasswordFormatException extends BaseHttpException {
+  constructor() {
+    super(
+      'Invalid password format',
+      HttpStatus.BAD_REQUEST,
+      CommonErrorCodes.InvalidPasswordFormat.toString(),
+    );
+  }
+}
 export class InvalidCredentialsException extends BaseHttpException {
   constructor() {
     super(

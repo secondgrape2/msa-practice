@@ -13,6 +13,7 @@ import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { REWARD_TYPE } from '../src/domain/reward.domain';
 import { CONDITION_TYPE } from '../src/domain/reward.domain';
+import { REWARD_REQUEST_COLLECTION_NAME } from '../src/schemas/reward-request.schema';
 
 describe('GameEventController (Integration)', () => {
   let app: INestApplication;
@@ -429,10 +430,10 @@ describe('GameEventController (Integration)', () => {
   describe('GET /events/v1/rewards/my-history', () => {
     let createdEventId: string;
     let createdRewardId: string;
+    let pendingRewardId: string;
 
     beforeEach(async () => {
       // Create an event and reward for testing
-
       const createEventDto: CreateGameEventDto = {
         name: 'Test Event for History',
         description: 'Test Description for History',
@@ -468,15 +469,16 @@ describe('GameEventController (Integration)', () => {
         conditionsDescription: '레벨 1 이상',
       };
 
-      const rewardResponse = await request(app.getHttpServer())
+      const firstRewardResponse = await request(app.getHttpServer())
         .post(`/events/v1/${createdEventId}/rewards`)
         .set('Cookie', [`access_token=${adminToken}`])
-        .send(createRewardDto);
+        .send(createRewardDto)
+        .expect(201);
 
-      createdRewardId = rewardResponse.body.id;
+      createdRewardId = firstRewardResponse.body.id;
 
-      // Create a reward request
-      const rewardRequestResponse = await request(app.getHttpServer())
+      // Create multiple reward requests with different statuses, success, failed, pending
+      const request1 = await request(app.getHttpServer())
         .post('/events/v1/rewards/request')
         .set('Cookie', [`access_token=${userToken}`])
         .send({
@@ -484,6 +486,62 @@ describe('GameEventController (Integration)', () => {
           rewardId: createdRewardId,
         })
         .expect(201);
+
+      // Update the status of the first request to success in DB
+      await dbConnection.collection(REWARD_REQUEST_COLLECTION_NAME).updateOne(
+        {
+          _id: new Types.ObjectId(request1.body.id),
+          userId: new Types.ObjectId(userId),
+        },
+        { $set: { status: 'success' } },
+      );
+
+      const secondRewardResponse = await request(app.getHttpServer())
+        .post(`/events/v1/${createdEventId}/rewards`)
+        .set('Cookie', [`access_token=${adminToken}`])
+        .send(createRewardDto)
+        .expect(201);
+
+      createdRewardId = secondRewardResponse.body.id;
+
+      // Create another reward request, failed
+      const request2 = await request(app.getHttpServer())
+        .post('/events/v1/rewards/request')
+        .set('Cookie', [`access_token=${userToken}`])
+        .send({
+          eventId: createdEventId,
+          rewardId: createdRewardId,
+        })
+        .expect(201);
+
+      // Update the status of the second request to failed in DB
+      await dbConnection.collection(REWARD_REQUEST_COLLECTION_NAME).updateOne(
+        {
+          _id: new Types.ObjectId(request2.body.id),
+          userId: new Types.ObjectId(userId),
+        },
+        { $set: { status: 'failed' } },
+      );
+
+      const thirdRewardResponse = await request(app.getHttpServer())
+        .post(`/events/v1/${createdEventId}/rewards`)
+        .set('Cookie', [`access_token=${adminToken}`])
+        .send(createRewardDto)
+        .expect(201);
+
+      createdRewardId = thirdRewardResponse.body.id;
+
+      // Create another reward request, pending
+      const request3 = await request(app.getHttpServer())
+        .post('/events/v1/rewards/request')
+        .set('Cookie', [`access_token=${userToken}`])
+        .send({
+          eventId: createdEventId,
+          rewardId: createdRewardId,
+        })
+        .expect(201);
+
+      pendingRewardId = request3.body.id;
     });
 
     it("should return user's own reward request history", async () => {
@@ -493,15 +551,57 @@ describe('GameEventController (Integration)', () => {
         .expect(200);
 
       expect(Array.isArray(response.body.items)).toBe(true);
-      expect(response.body.items.length).toBeGreaterThan(0);
+      expect(response.body.items.length).toBeGreaterThan(2);
 
-      const rewardRequest = response.body.items[0];
-      expect(rewardRequest).toHaveProperty('id');
-      expect(rewardRequest).toHaveProperty('userId', userId);
-      expect(rewardRequest).toHaveProperty('eventId', createdEventId);
-      expect(rewardRequest).toHaveProperty('rewardId', createdRewardId);
-      expect(rewardRequest).toHaveProperty('status');
-      expect(rewardRequest).toHaveProperty('requestedAt');
+      // Check if the response contains the pending reward request
+      for (const item of response.body.items) {
+        if (item.rewardId === pendingRewardId) {
+          expect(item).toHaveProperty('id');
+          expect(item).toHaveProperty('userId', userId);
+          expect(item).toHaveProperty('eventId', createdEventId);
+          expect(item).toHaveProperty('rewardId', pendingRewardId);
+          expect(item).toHaveProperty('status');
+          expect(item).toHaveProperty('requestedAt');
+        }
+      }
+    });
+
+    it('should filter reward requests by status', async () => {
+      // Get all pending requests
+      const pendingResponse = await request(app.getHttpServer())
+        .get('/events/v1/rewards/my-history')
+        .query({ status: 'pending' })
+        .set('Cookie', [`access_token=${userToken}`])
+        .expect(200);
+
+      expect(Array.isArray(pendingResponse.body.items)).toBe(true);
+      pendingResponse.body.items.forEach((request: any) => {
+        expect(request.status).toBe('pending');
+      });
+
+      // Get all success requests
+      const successResponse = await request(app.getHttpServer())
+        .get('/events/v1/rewards/my-history')
+        .query({ status: 'success' })
+        .set('Cookie', [`access_token=${userToken}`])
+        .expect(200);
+
+      expect(Array.isArray(successResponse.body.items)).toBe(true);
+      successResponse.body.items.forEach((request: any) => {
+        expect(request.status).toBe('success');
+      });
+
+      // Get all failed requests
+      const failedResponse = await request(app.getHttpServer())
+        .get('/events/v1/rewards/my-history')
+        .query({ status: 'failed' })
+        .set('Cookie', [`access_token=${userToken}`])
+        .expect(200);
+
+      expect(Array.isArray(failedResponse.body.items)).toBe(true);
+      failedResponse.body.items.forEach((request: any) => {
+        expect(request.status).toBe('failed');
+      });
     });
 
     it('should return 403 when accessed without proper role', async () => {
@@ -571,14 +671,23 @@ describe('GameEventController (Integration)', () => {
 
       createdRewardId = rewardResponse.body.id;
 
-      // Create reward requests from multiple users
-      await request(app.getHttpServer())
+      // Create reward requests from multiple users with different statuses
+      const request1 = await request(app.getHttpServer())
         .post('/events/v1/rewards/request')
         .set('Cookie', [`access_token=${userToken}`])
         .send({
           eventId: createdEventId,
           rewardId: createdRewardId,
         });
+
+      // Update the status of the first request to success in DB
+      await dbConnection.collection(REWARD_REQUEST_COLLECTION_NAME).updateOne(
+        {
+          _id: new Types.ObjectId(request1.body.id),
+          userId: new Types.ObjectId(userId),
+        },
+        { $set: { status: 'success' } },
+      );
 
       const anotherUserId = new mongoose.Types.ObjectId().toString();
       const anotherUserToken = jwt.sign(
@@ -591,13 +700,25 @@ describe('GameEventController (Integration)', () => {
         { expiresIn: 86400 },
       );
 
-      await request(app.getHttpServer())
+      const request2 = await request(app.getHttpServer())
         .post('/events/v1/rewards/request')
         .set('Cookie', [`access_token=${anotherUserToken}`])
         .send({
           eventId: createdEventId,
           rewardId: createdRewardId,
         });
+
+      // Update the status of the second request to failed in DB
+      await dbConnection.collection(REWARD_REQUEST_COLLECTION_NAME).updateOne(
+        {
+          _id: new Types.ObjectId(request2.body.id),
+          userId: new Types.ObjectId(anotherUserId),
+        },
+        { $set: { status: 'failed' } },
+      );
+
+      // Add a small delay to ensure DB updates are complete
+      await new Promise((resolve) => setTimeout(resolve, 100));
     });
 
     it('should return all reward request history for admin', async () => {
@@ -616,6 +737,44 @@ describe('GameEventController (Integration)', () => {
       expect(rewardRequest).toHaveProperty('rewardId', createdRewardId);
       expect(rewardRequest).toHaveProperty('status');
       expect(rewardRequest).toHaveProperty('requestedAt');
+    });
+
+    it('should filter reward requests by status for admin', async () => {
+      // Get all pending requests
+      const pendingResponse = await request(app.getHttpServer())
+        .get('/events/v1/admin/rewards/request/history')
+        .query({ status: 'pending' })
+        .set('Cookie', [`access_token=${adminToken}`])
+        .expect(200);
+
+      expect(Array.isArray(pendingResponse.body.items)).toBe(true);
+      pendingResponse.body.items.forEach((request: any) => {
+        expect(request.status).toBe('pending');
+      });
+
+      // Get all success requests
+      const successResponse = await request(app.getHttpServer())
+        .get('/events/v1/admin/rewards/request/history')
+        .query({ status: 'success' })
+        .set('Cookie', [`access_token=${adminToken}`])
+        .expect(200);
+
+      expect(Array.isArray(successResponse.body.items)).toBe(true);
+      successResponse.body.items.forEach((request: any) => {
+        expect(request.status).toBe('success');
+      });
+
+      // Get all failed requests
+      const failedResponse = await request(app.getHttpServer())
+        .get('/events/v1/admin/rewards/request/history')
+        .query({ status: 'failed' })
+        .set('Cookie', [`access_token=${adminToken}`])
+        .expect(200);
+
+      expect(Array.isArray(failedResponse.body.items)).toBe(true);
+      failedResponse.body.items.forEach((request: any) => {
+        expect(request.status).toBe('failed');
+      });
     });
 
     it('should return all reward request history for auditor', async () => {

@@ -21,12 +21,18 @@ export interface RewardRequestRepository {
   ): Promise<RewardRequest>;
   findByUserId(userId: string): Promise<RewardRequest[]>;
   findByUserIdWithPagination(
-    userId: string,
+    filter: {
+      userId: string;
+      status?: RewardRequestStatus;
+    },
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>>;
   findByEventId(eventId: string): Promise<RewardRequest[]>;
   findById(id: string): Promise<RewardRequest | null>;
   findAll(
+    filter: {
+      status?: RewardRequestStatus;
+    },
     options?: PaginationOptions,
   ): Promise<PaginationResult<RewardRequest>>;
   update(id: string, data: Partial<RewardRequest>): Promise<RewardRequest>;

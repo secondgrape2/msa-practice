@@ -12,6 +12,7 @@ import { RewardResponseDto } from '@app/common/event/dto/reward-response.dto';
 import { CreateRewardDto } from '@app/common/event/dto/reward.dto';
 import { RewardRequestResponseDto } from '@app/common/event/dto/reward-request.dto';
 import { CreateRewardRequestDto } from '@app/common/event/dto/reward-request.dto';
+import { RewardRequestFilterDto } from '@app/common/event/dto/reward-request.dto';
 import {
   Body,
   Controller,
@@ -101,7 +102,7 @@ export class EventGatewayController {
   @HttpCode(HttpStatus.OK)
   async getMyRewardHistory(
     @Req() req: AuthenticatedRequest,
-    @Query() paginationDto: PaginationDto,
+    @Query() filterDto: RewardRequestFilterDto,
   ) {
     return this.gatewayService.proxyToEventService<RewardRequestResponseDto[]>(
       '/events/v1/rewards/my-history',
@@ -109,8 +110,9 @@ export class EventGatewayController {
       undefined,
       req.headers.cookie,
       {
-        page: paginationDto.page?.toString(),
-        limit: paginationDto.limit?.toString(),
+        page: filterDto.page?.toString(),
+        limit: filterDto.limit?.toString(),
+        status: filterDto.status,
       },
     );
   }
@@ -122,7 +124,7 @@ export class EventGatewayController {
   @HttpCode(HttpStatus.OK)
   async getRewardHistory(
     @Req() req: AuthenticatedRequest,
-    @Query() paginationDto: PaginationDto,
+    @Query() filterDto: RewardRequestFilterDto,
   ) {
     return this.gatewayService.proxyToEventService<RewardRequestResponseDto[]>(
       '/events/v1/admin/rewards/request/history',
@@ -130,8 +132,9 @@ export class EventGatewayController {
       undefined,
       req.headers.cookie,
       {
-        page: paginationDto.page?.toString(),
-        limit: paginationDto.limit?.toString(),
+        page: filterDto.page?.toString(),
+        limit: filterDto.limit?.toString(),
+        status: filterDto.status,
       },
     );
   }
