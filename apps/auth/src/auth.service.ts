@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { SignUpDto, SignInDto } from '@app/common/auth-core/dtos';
@@ -11,6 +11,7 @@ import {
   JwtSigningKeyProvider,
   JWT_SIGNING_KEY_PROVIDER,
 } from '@app/common/auth-core/interfaces/jwt-key-provider.interface';
+import { UserNotFoundException } from './exceptions/auth.exceptions';
 
 @Injectable()
 export class AuthServiceImpl implements AuthService {
@@ -79,7 +80,7 @@ export class AuthServiceImpl implements AuthService {
 
     const user = await this.userRepository.findById(payload.sub);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UserNotFoundException();
     }
 
     const accessToken = await this.generateAccessToken(user);

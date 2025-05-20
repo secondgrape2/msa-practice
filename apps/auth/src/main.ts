@@ -11,6 +11,11 @@ import {
   SwaggerModule,
 } from '@nestjs/swagger';
 import helmet from 'helmet';
+import {
+  ErrorFilter,
+  HttpExceptionFilter,
+  BaseExceptionFilter,
+} from '@app/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,6 +24,12 @@ async function bootstrap() {
     app.get(ConfigService);
 
   app.use(cookieParser());
+
+  app.useGlobalFilters(
+    new ErrorFilter(),
+    new HttpExceptionFilter(),
+    new BaseExceptionFilter(),
+  );
 
   // 보안 헤더를 위한 Helmet 미들웨어 설정
   app.use(

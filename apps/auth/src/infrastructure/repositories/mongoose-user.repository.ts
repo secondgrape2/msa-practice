@@ -9,6 +9,7 @@ import {
 import { UserRepository } from './user.repository.interface';
 import { User } from '../../interfaces/auth.interface';
 import { HandleMongoClassErrors } from '@app/common/decorators/mongo-error-class.decorator';
+import { UserNotFoundException } from '../../exceptions/auth.exceptions';
 
 @Injectable()
 @HandleMongoClassErrors()
@@ -42,7 +43,7 @@ export class MongooseUserRepository implements UserRepository {
       .findByIdAndUpdate(id, data, { new: true })
       .exec();
     if (!user) {
-      throw new Error('User not found');
+      throw new UserNotFoundException();
     }
     return toUserDomain(user);
   }

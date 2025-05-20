@@ -1,7 +1,11 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { User } from '../../interfaces/auth.interface';
 import { AuthActions } from './auth.actions';
 import { ROLE } from '@app/common/auth-core/constants/role.constants';
+import {
+  InvalidRefreshTokenException,
+  InvalidCredentialsException,
+  UserAlreadyExistsException,
+} from '../../exceptions/auth.exceptions';
 
 describe('AuthActions', () => {
   const mockUser: User = {
@@ -44,7 +48,7 @@ describe('AuthActions', () => {
     it('should throw for invalid token type', () => {
       const payload = { sub: '1', type: 'access' };
       expect(() => AuthActions.validateRefreshToken(payload)).toThrow(
-        UnauthorizedException,
+        InvalidRefreshTokenException,
       );
     });
   });
@@ -57,14 +61,14 @@ describe('AuthActions', () => {
 
     it('should throw for null user', () => {
       expect(() => AuthActions.validateUserCredentials(null, true)).toThrow(
-        UnauthorizedException,
+        InvalidCredentialsException,
       );
     });
 
     it('should throw for invalid password', () => {
       expect(() =>
         AuthActions.validateUserCredentials(mockUser, false),
-      ).toThrow(UnauthorizedException);
+      ).toThrow(InvalidCredentialsException);
     });
   });
 
@@ -75,7 +79,7 @@ describe('AuthActions', () => {
 
     it('should throw for existing user', () => {
       expect(() => AuthActions.validateUniqueUser(mockUser)).toThrow(
-        UnauthorizedException,
+        UserAlreadyExistsException,
       );
     });
   });

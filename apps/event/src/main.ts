@@ -11,6 +11,11 @@ import {
 import helmet from 'helmet';
 import { EnvironmentVariables } from './config';
 import { AppModule } from './app.module';
+import {
+  ErrorFilter,
+  HttpExceptionFilter,
+  BaseExceptionFilter,
+} from '@app/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -33,6 +38,12 @@ async function bootstrap() {
         },
       },
     }),
+  );
+
+  app.useGlobalFilters(
+    new ErrorFilter(),
+    new HttpExceptionFilter(),
+    new BaseExceptionFilter(),
   );
 
   app.useGlobalPipes(

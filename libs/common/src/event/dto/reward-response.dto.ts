@@ -44,12 +44,6 @@ export class RewardResponseDto {
 
   @Expose()
   @ApiProperty({
-    description: 'Number of times this reward can be claimed',
-  })
-  quantity: number;
-
-  @Expose()
-  @ApiProperty({
     description: 'Type-specific details of the reward',
     required: false,
   })

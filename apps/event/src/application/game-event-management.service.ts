@@ -1,6 +1,6 @@
 import { CreateGameEventDto } from '@app/common/event/dto/game-event.dto';
 import { CreateRewardDto } from '@app/common/event/dto/reward.dto';
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { GameEvent } from '../domain/game-event.domain';
 import { RewardRequest } from '../domain/reward-request.domain';
 import { Reward, REWARD_REQUEST_STATUS } from '../domain/reward.domain';
@@ -19,6 +19,15 @@ import {
   PaginationOptions,
   PaginationResult,
 } from '@app/common/interfaces/pagination.interface';
+import {
+  EventNotFoundException,
+  RewardNotFoundException,
+  InvalidRewardEventException,
+  RewardConditionNotMetException,
+  DuplicateRewardRequestException,
+  RewardAlreadyReceivedException,
+  RewardRequestUpdateFailedException,
+} from '../event.exceptions';
 
 export const USER_STATE_SERVICE = 'USER_STATE_SERVICE';
 
@@ -52,10 +61,7 @@ export class GameEventManagementService {
   ): Promise<GameEvent & { rewards: Reward[] }> {
     const event = await this.gameEventService.findOne(id);
     if (!event) {
-      throw new HttpException(
-        'Event not found',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
+      throw new EventNotFoundException();
     }
 
     const rewards = await this.rewardService.findByEventId(id);
@@ -68,10 +74,7 @@ export class GameEventManagementService {
   ): Promise<Reward> {
     const event = await this.gameEventService.findOne(eventId);
     if (!event) {
-      throw new HttpException(
-        'Event not found',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
+      throw new EventNotFoundException();
     }
 
     return this.rewardService.create({
@@ -87,29 +90,19 @@ export class GameEventManagementService {
   ): Promise<RewardRequest> {
     const event = await this.gameEventService.findOne(eventId);
     if (!event) {
-      throw new HttpException(
-        '이벤트를 찾을 수 없습니다',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new EventNotFoundException();
     }
 
     // Check if reward exists and belongs to the event
     const reward = await this.rewardService.findById(rewardId);
     if (!reward) {
-      throw new HttpException(
-        '보상을 찾을 수 없습니다',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
+      throw new RewardNotFoundException();
     }
     if (reward.eventId !== eventId) {
-      throw new HttpException(
-        '해당 이벤트의 보상이 아닙니다',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new InvalidRewardEventException();
     }
 
     // Check if user meets reward conditions
-    // TODO: implement user state service
     const userState = await this.userStateService.getUserState(userId);
 
     const meetsConditions = ConditionChecker.checkCondition(
@@ -117,10 +110,7 @@ export class GameEventManagementService {
       userState,
     );
     if (!meetsConditions) {
-      throw new HttpException(
-        '보상 수령 조건을 충족하지 않습니다',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new RewardConditionNotMetException();
     }
 
     // Check for existing requests
@@ -133,15 +123,12 @@ export class GameEventManagementService {
     if (existingRequest) {
       // If there's a pending request, throw an error
       if (existingRequest.status === REWARD_REQUEST_STATUS.PENDING) {
-        throw new HttpException(
-          '이미 진행 중인 보상 요청이 있습니다',
-          HttpStatus.CONFLICT,
-        );
+        throw new DuplicateRewardRequestException();
       }
 
       // If there's a successful request, throw an error
       if (existingRequest.status === REWARD_REQUEST_STATUS.SUCCESS) {
-        throw new HttpException('이미 보상을 받았습니다', HttpStatus.CONFLICT);
+        throw new RewardAlreadyReceivedException();
       }
 
       // If there's a failed request, update it to pending
@@ -168,10 +155,7 @@ export class GameEventManagementService {
     const request = await this.rewardRequestService.findById(requestId);
 
     if (request.status !== REWARD_REQUEST_STATUS.PENDING) {
-      throw new HttpException(
-        'Only pending reward requests can be updated',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new RewardRequestUpdateFailedException();
     }
 
     const newStatus = success

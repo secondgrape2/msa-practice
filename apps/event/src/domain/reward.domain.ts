@@ -101,7 +101,6 @@ export type ConditionType =
  *   type: 'POINT',
  *   name: 'Login Bonus',
  *   description: 'Login for 7 consecutive days',
- *   quantity: 1,
  *   details: { pointAmount: 1000 }
  * }
  */

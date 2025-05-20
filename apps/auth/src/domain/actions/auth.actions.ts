@@ -1,10 +1,14 @@
-import { UnauthorizedException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import {
   BCRYPT_SALT_ROUNDS,
   TokenPayload,
   User,
 } from '../../interfaces/auth.interface';
+import {
+  InvalidCredentialsException,
+  InvalidRefreshTokenException,
+  UserAlreadyExistsException,
+} from '../../exceptions/auth.exceptions';
 
 export class AuthActions {
   static async hashPassword(password: string): Promise<string> {
@@ -35,7 +39,7 @@ export class AuthActions {
 
   static validateRefreshToken(payload: TokenPayload): void {
     if (payload.type !== 'refresh') {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new InvalidRefreshTokenException();
     }
   }
 
@@ -44,14 +48,14 @@ export class AuthActions {
     isPasswordValid: boolean,
   ): User {
     if (!user || !isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new InvalidCredentialsException();
     }
     return user;
   }
 
   static validateUniqueUser(existingUser: User | null): void {
     if (existingUser) {
-      throw new UnauthorizedException('User already exists');
+      throw new UserAlreadyExistsException();
     }
   }
 }

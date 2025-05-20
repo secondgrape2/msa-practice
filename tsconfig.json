@@ -20,6 +20,7 @@
     "incremental": true,
     "paths": {
       "@app/*": ["libs/*"],
+      "@app/common": ["libs/common/src"],
       "@app/common/*": ["libs/common/src/*"]
     },
     "resolveJsonModule": true

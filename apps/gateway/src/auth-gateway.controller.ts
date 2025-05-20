@@ -25,35 +25,20 @@ export class AuthGatewayController {
     @Body() signUpDto: SignUpDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    try {
-      const { data, cookies } = await this.gatewayService.proxyToAuthService(
-        '/auth/v1/signup/email',
-        'POST',
-        signUpDto,
-      );
+    const { data, cookies } = await this.gatewayService.proxyToAuthService(
+      '/auth/v1/signup/email',
+      'POST',
+      signUpDto,
+    );
 
-      if (cookies) {
-        res.setHeader('Set-Cookie', cookies);
-      }
-
-      return {
-        statusCode: HttpStatus.CREATED,
-        data,
-      };
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new HttpException(
-          {
-            message: error.response?.data?.message || 'Internal server error',
-          },
-          error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-      throw new HttpException(
-        { message: 'Internal server error' },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    if (cookies) {
+      res.setHeader('Set-Cookie', cookies);
     }
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      data,
+    };
   }
 
   @Post('signin/email')
@@ -62,70 +47,40 @@ export class AuthGatewayController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    try {
-      const { data, cookies } = await this.gatewayService.proxyToAuthService(
-        '/auth/v1/signin/email',
-        'POST',
-        signInDto,
-        req.headers.cookie,
-      );
+    const { data, cookies } = await this.gatewayService.proxyToAuthService(
+      '/auth/v1/signin/email',
+      'POST',
+      signInDto,
+      req.headers.cookie,
+    );
 
-      if (cookies) {
-        res.setHeader('Set-Cookie', cookies);
-      }
-
-      return {
-        statusCode: HttpStatus.OK,
-        data,
-      };
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new HttpException(
-          {
-            message: error.response?.data?.message || 'Internal server error',
-          },
-          error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-      throw new HttpException(
-        { message: 'Internal server error' },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    if (cookies) {
+      res.setHeader('Set-Cookie', cookies);
     }
+
+    return {
+      statusCode: HttpStatus.OK,
+      data,
+    };
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    try {
-      const { data, cookies } = await this.gatewayService.proxyToAuthService(
-        '/auth/v1/logout',
-        'POST',
-        {},
-        req.headers.cookie,
-      );
-      if (cookies) {
-        res.setHeader('Set-Cookie', cookies);
-      }
-
-      return {
-        statusCode: HttpStatus.OK,
-        data,
-      };
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new HttpException(
-          {
-            message: error.response?.data?.message || 'Internal server error',
-          },
-          error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-      throw new HttpException(
-        { message: 'Internal server error' },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    const { data, cookies } = await this.gatewayService.proxyToAuthService(
+      '/auth/v1/logout',
+      'POST',
+      {},
+      req.headers.cookie,
+    );
+    if (cookies) {
+      res.setHeader('Set-Cookie', cookies);
     }
+
+    return {
+      statusCode: HttpStatus.OK,
+      data,
+    };
   }
 
   @Post('refresh')
@@ -133,35 +88,20 @@ export class AuthGatewayController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    try {
-      const { data, cookies } = await this.gatewayService.proxyToAuthService(
-        '/auth/v1/refresh',
-        'POST',
-        {},
-        req.headers.cookie,
-      );
+    const { data, cookies } = await this.gatewayService.proxyToAuthService(
+      '/auth/v1/refresh',
+      'POST',
+      {},
+      req.headers.cookie,
+    );
 
-      if (cookies) {
-        res.setHeader('Set-Cookie', cookies);
-      }
-
-      return {
-        statusCode: HttpStatus.OK,
-        data,
-      };
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new HttpException(
-          {
-            message: error.response?.data?.message || 'Internal server error',
-          },
-          error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-      throw new HttpException(
-        { message: 'Internal server error' },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    if (cookies) {
+      res.setHeader('Set-Cookie', cookies);
     }
+
+    return {
+      statusCode: HttpStatus.OK,
+      data,
+    };
   }
 }
