@@ -1,13 +1,21 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
-import { GameEvent, ConditionConfig } from '../domain/game-event.domain';
-import mongoose from 'mongoose';
+import { ModelOptions, Prop, buildSchema } from '@typegoose/typegoose';
+import mongoose, { Document } from 'mongoose';
+import { GameEvent } from '../domain/game-event.domain';
 
 export type GameEventDocument = GameEventEntity & Document;
 
 const GAME_EVENT_COLLECTION_NAME = 'game_events';
 
-@Schema({ timestamps: true, collection: GAME_EVENT_COLLECTION_NAME })
+@ModelOptions({
+  schemaOptions: {
+    collection: GAME_EVENT_COLLECTION_NAME,
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      getters: true,
+    },
+  },
+})
 export class GameEventEntity {
   _id: mongoose.Types.ObjectId;
 
@@ -30,7 +38,7 @@ export class GameEventEntity {
   updatedAt: Date;
 }
 
-export const GameEventSchema = SchemaFactory.createForClass(GameEventEntity);
+export const GameEventSchema = buildSchema(GameEventEntity);
 
 export const toGameEventDomain = (doc: GameEventDocument): GameEvent => ({
   id: doc._id.toString(),

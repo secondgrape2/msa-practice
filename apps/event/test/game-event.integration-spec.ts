@@ -6,7 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import cookieParser from 'cookie-parser';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Connection, Types } from 'mongoose';
+import mongoose, { Connection, Types } from 'mongoose';
 import request from 'supertest';
 import { ROLE } from '@app/common/auth-core/constants/role.constants';
 import * as jwt from 'jsonwebtoken';
@@ -20,6 +20,7 @@ describe('GameEventController (Integration)', () => {
   let dbConnection: Connection;
   let adminToken: string;
   let userToken: string;
+  let userId: string;
   let createdEventId: string;
 
   beforeAll(async () => {
@@ -45,9 +46,10 @@ describe('GameEventController (Integration)', () => {
     await app.init();
 
     // Create test tokens
+    const adminId = new mongoose.Types.ObjectId().toString();
     adminToken = jwt.sign(
       {
-        sub: 'admin-id',
+        sub: adminId,
         email: 'admin@example.com',
         roles: [ROLE.ADMIN],
       },
@@ -55,9 +57,10 @@ describe('GameEventController (Integration)', () => {
       { expiresIn: 86400 },
     );
 
+    userId = new mongoose.Types.ObjectId().toString();
     userToken = jwt.sign(
       {
-        sub: 'user-id',
+        sub: userId,
         email: 'user@example.com',
         roles: [ROLE.USER],
       },
@@ -429,11 +432,12 @@ describe('GameEventController (Integration)', () => {
 
     beforeEach(async () => {
       // Create an event and reward for testing
+
       const createEventDto: CreateGameEventDto = {
         name: 'Test Event for History',
         description: 'Test Description for History',
         startAt: new Date('2024-01-01T00:00:00Z'),
-        endAt: new Date('2024-12-31T23:59:59Z'),
+        endAt: new Date(new Date().setMonth(new Date().getMonth() + 1)),
         isActive: true,
       };
 
@@ -493,7 +497,7 @@ describe('GameEventController (Integration)', () => {
 
       const rewardRequest = response.body.items[0];
       expect(rewardRequest).toHaveProperty('id');
-      expect(rewardRequest).toHaveProperty('userId', 'user-id');
+      expect(rewardRequest).toHaveProperty('userId', userId);
       expect(rewardRequest).toHaveProperty('eventId', createdEventId);
       expect(rewardRequest).toHaveProperty('rewardId', createdRewardId);
       expect(rewardRequest).toHaveProperty('status');
@@ -501,9 +505,10 @@ describe('GameEventController (Integration)', () => {
     });
 
     it('should return 403 when accessed without proper role', async () => {
+      const auditorId = new mongoose.Types.ObjectId().toString();
       const auditorToken = jwt.sign(
         {
-          sub: 'auditor-id',
+          sub: auditorId,
           email: 'auditor@example.com',
           roles: [ROLE.AUDITOR],
         },
@@ -575,9 +580,10 @@ describe('GameEventController (Integration)', () => {
           rewardId: createdRewardId,
         });
 
+      const anotherUserId = new mongoose.Types.ObjectId().toString();
       const anotherUserToken = jwt.sign(
         {
-          sub: 'another-user-id',
+          sub: anotherUserId,
           email: 'another@example.com',
           roles: [ROLE.USER],
         },
@@ -613,9 +619,10 @@ describe('GameEventController (Integration)', () => {
     });
 
     it('should return all reward request history for auditor', async () => {
+      const auditorId = new mongoose.Types.ObjectId().toString();
       const auditorToken = jwt.sign(
         {
-          sub: 'auditor-id',
+          sub: auditorId,
           email: 'auditor@example.com',
           roles: [ROLE.AUDITOR],
         },

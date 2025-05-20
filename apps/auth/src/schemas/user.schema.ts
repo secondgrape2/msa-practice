@@ -1,14 +1,22 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Index, ModelOptions, Prop, buildSchema } from '@typegoose/typegoose';
 import { Document, Types } from 'mongoose';
 import { ROLE, Role } from '@app/common/auth-core/constants/role.constants';
 import { User } from '../interfaces/auth.interface';
-import { Index } from '@typegoose/typegoose';
 
 export type UserDocument = UserEntity & Document;
 
 const USER_COLLECTION_NAME = 'users';
 @Index({ email: 1 }, { unique: true })
-@Schema({ timestamps: true, collection: USER_COLLECTION_NAME })
+@ModelOptions({
+  schemaOptions: {
+    collection: USER_COLLECTION_NAME,
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      getters: true,
+    },
+  },
+})
 export class UserEntity {
   _id: Types.ObjectId;
 
@@ -32,7 +40,7 @@ export class UserEntity {
   updatedAt: Date;
 }
 
-export const UserSchema = SchemaFactory.createForClass(UserEntity);
+export const UserSchema = buildSchema(UserEntity);
 
 export const toUserDomain = (doc: UserDocument): User => ({
   id: doc._id.toString(),
